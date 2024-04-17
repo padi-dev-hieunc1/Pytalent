@@ -1,0 +1,17 @@
+{
+  "SUCCESS": "Success",
+  "INVALID_EMAIL_PASSWORD": "Email or password invalid",
+  "IS_INCORRECT_EMAIL": "Email is incorrect",
+  "IS_INCORRECT_PASSWORD": "Password is incorrect",
+  "HR_NOT_FOUND": "This hr is not existed",
+  "USER_NOT_FOUND": "This user is not exist",
+  "RESULT_NOT_FOUND": "Can not find any results",
+  "HR_GAME_EXISTED": "This game had been authorized to this hr",
+  "ASSESSMENT_NOT_FOUND": "Can not find this assessment",
+  "ASSESSMENT_EXPIRED": "Invalid end time",
+  "ANSWER_EXISTED": "This answer is existed",
+  "UPDATED_FAIL": "Updated failed",
+  "GAME_NOT_FOUND": "This game is not exist",
+  "GAME_PLAY_ONCE": "Candidates can only play once",
+  "GAME_NOT_FOUND_IN_ASSESSMENT": "This assessment do not have any games"
+}
