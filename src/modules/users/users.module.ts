@@ -4,26 +4,21 @@ import { UsersRepository } from '@modules/users/repositories/user.repository';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersEntity } from '@entities/index';
 import { UsersAdminController } from '@modules/users/controllers/users.admin.controller';
-import { HrGamesRepository } from './repositories/hr-game.repository';
-import { HrGamesService } from './services/hr-game.service';
-import { CandidateAssessmentsRepository } from '@modules/assessments/repositories/candidate-assessment.repository';
+import { UsersController } from './controllers/users.user.controller';
+// import { CandidateAssessmentsRepository } from '@modules/assessments/repositories/candidate-assessment.repository';
 
 @Module({
   imports: [TypeOrmModule.forFeature([UsersEntity])],
-  controllers: [UsersAdminController],
+  controllers: [UsersAdminController, UsersController],
   providers: [
     UsersService,
     UsersRepository,
-    HrGamesRepository,
-    HrGamesService,
-    CandidateAssessmentsRepository,
+    // CandidateAssessmentsRepository,
   ],
   exports: [
     UsersService,
     UsersRepository,
-    HrGamesRepository,
-    HrGamesService,
-    CandidateAssessmentsRepository,
+    // CandidateAssessmentsRepository,
   ],
 })
 export class UsersModule {}

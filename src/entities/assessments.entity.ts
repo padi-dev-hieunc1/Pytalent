@@ -11,7 +11,8 @@ import { BaseEntity } from '@entities/base.entity';
 import { AssessmentStatusEnum } from '@common/enum/assessment-status.enum';
 import { Users } from './users.entity';
 import { CandidateAssessments } from './candidate-assessment';
-import { Games } from './games.entity';
+import { GameResults } from './games-results.entity';
+import { AssessmentGames } from './assessment-game.entity';
 
 @Entity()
 export class Assessments extends BaseEntity {
@@ -35,7 +36,7 @@ export class Assessments extends BaseEntity {
   status: AssessmentStatusEnum;
 
   @Column()
-  max_result: number;
+  max_score: number;
 
   @Column()
   hrId: number;
@@ -50,6 +51,12 @@ export class Assessments extends BaseEntity {
   )
   candidate_assessment: CandidateAssessments[];
 
-  @OneToMany(() => Games, (game) => game.assessment)
-  game: Games[];
+  @OneToMany(
+    () => AssessmentGames,
+    (assessment_game) => assessment_game.assessment,
+  )
+  assessment_game: AssessmentGames[];
+
+  @OneToMany(() => GameResults, (game_result) => game_result.assessment)
+  game_result: GameResults[];
 }

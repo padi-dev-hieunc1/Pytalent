@@ -41,7 +41,6 @@ export class createUserTable1671000655080 implements MigrationInterface {
           {
             name: 'updated_at',
             type: 'datetime',
-            isNullable: true,
           },
         ],
         uniques: [

@@ -7,45 +7,39 @@ import {
   Request,
   Get,
   Param,
-  Patch,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '@guards/jwt-auth.guard';
 import { CreateUserDto } from '@modules/users/dto/create-user.dto';
 import { Response } from 'express';
 import { UsersService } from '@modules/users/services/users.service';
-import { HrGamesService } from '@modules/users/services/hr-game.service';
 import { BaseController } from '@modules/app/base.controller';
 import { AuthorizationGuard } from '@guards/authorization.guard';
 import { RoleEnum } from '@enum/role.enum';
-import { CreateHrGameDto } from '../dto/create-hr-game.dto';
-import { UpdateUserPasswordDto } from '../dto/update-user-password';
+import { CREATE_HR, LIST_HRS, USER_INFO } from '@shared/constant/constants';
 
-@Controller('api/v1')
+@Controller('api/v1/admin')
 export class UsersAdminController extends BaseController {
-  constructor(
-    private readonly usersService: UsersService,
-    private readonly hrGameService: HrGamesService,
-  ) {
+  constructor(private readonly usersService: UsersService) {
     super();
   }
 
-  @Post('admin/create')
+  @Post('create-hr')
   @UseGuards(JwtAuthGuard, new AuthorizationGuard([RoleEnum.ADMIN]))
   async createHr(
     @Request() req,
     @Body() createUserDto: CreateUserDto,
     @Res() res: Response,
   ) {
-    const newHr = await this.usersService.createUser(createUserDto);
-    newHr.created_at = new Date(new Date().getTime() + 7 * 60 * 60 * 1000);
+    const new_hr = await this.usersService.createHr(createUserDto);
 
     return this.successResponse(
       {
         data: {
-          newHr,
+          new_hr,
           links: {
-            authorize_hr_game:
-              'http//localhost:3000/api/v1/admin/hr-games/create',
+            create_hr: CREATE_HR,
+            list_hrs: LIST_HRS,
+            user_info: USER_INFO,
           },
         },
         message: 'hr created',
@@ -54,113 +48,21 @@ export class UsersAdminController extends BaseController {
     );
   }
 
-  @Post('admin/hr-games/create')
-  @UseGuards(JwtAuthGuard, new AuthorizationGuard([RoleEnum.ADMIN]))
-  async createHrGames(
-    @Request() req,
-    @Body() createHrGameDto: CreateHrGameDto,
-    @Res() res: Response,
-  ) {
-    const newHrGame = await this.hrGameService.createHrGames(createHrGameDto);
-
-    if (newHrGame) {
-      return this.successResponse(
-        {
-          data: {
-            newHrGame,
-            links: {
-              hr_category_game: `http//localhost:3000/api/v1/admin/hr-games/${newHrGame.hrId}`,
-            },
-          },
-          message: 'Authorized hr success',
-        },
-        res,
-      );
-    } else {
-      return this.errorsResponse(
-        {
-          message: 'Can not authorize hr',
-        },
-        res,
-      );
-    }
-  }
-
-  @Get('admin/hr-games/:hrId')
-  @UseGuards(
-    JwtAuthGuard,
-    new AuthorizationGuard([RoleEnum.ADMIN, RoleEnum.HR]),
-  )
-  async getCategoryGamesOfHr(
-    @Param('hrId') hrId: number,
-    @Res() res: Response,
-  ) {
-    const listCategoryGames: string[] =
-      await this.hrGameService.getCategoryGamesOfHr(hrId);
-
-    if (listCategoryGames) {
-      return this.successResponse(
-        {
-          data: {
-            hrId: hrId,
-            categories: listCategoryGames,
-          },
-        },
-        res,
-      );
-    } else {
-      return this.errorsResponse(
-        {
-          message: 'Can not find hr',
-        },
-        res,
-      );
-    }
-  }
-
-  @Get('admin/user')
-  @UseGuards(JwtAuthGuard, new AuthorizationGuard([RoleEnum.ADMIN]))
-  async getUserInformationByEmail(@Body() email: string, @Res() res: Response) {
-    const user_information = await this.usersService.getUserInformationByEmail(
-      email,
-    );
-
-    if (user_information) {
-      return this.successResponse(
-        {
-          data: user_information,
-        },
-        res,
-      );
-    } else {
-      return this.errorsResponse(
-        {
-          message: 'Can not find user',
-        },
-        res,
-      );
-    }
-  }
-
-  @Get('admin/hrs')
+  @Get('list-hrs')
   @UseGuards(JwtAuthGuard, new AuthorizationGuard([RoleEnum.ADMIN]))
   async getListHr(@Res() res: Response) {
-    const listHrs = await this.usersService.getListHr();
+    const list_hrs = await this.usersService.getListHr();
 
-    const listHrLinks: object[] = [];
-
-    for (const hr of listHrs) {
-      listHrLinks.push({
-        [hr.username]: `http//localhost:3000/api/v1/admin/hr-games/${hr.id}`,
-      });
-    }
-
-    if (listHrs) {
+    if (list_hrs) {
       return this.successResponse(
         {
           data: {
-            listHrs,
-            links: listHrLinks,
+            list_hrs,
+            links: {
+              create_hr: CREATE_HR,
+              list_hrs: LIST_HRS,
+              user_info: USER_INFO,
+            },
           },
         },
         res,
@@ -175,42 +77,30 @@ export class UsersAdminController extends BaseController {
     }
   }
 
-  @Get('admin/export')
+  @Get('user-info/:userId')
   @UseGuards(JwtAuthGuard, new AuthorizationGuard([RoleEnum.ADMIN]))
-  async exportResult(@Res() res: Response) {
-    const results = await this.usersService.getAllResults();
+  async getUserInformationById(
+    @Param('userId') userId: number,
+    @Res() res: Response,
+  ) {
+    const user_information = await this.usersService.getUserInformationById(
+      userId,
+    );
 
-    if (results) {
+    if (user_information) {
       return this.successResponse(
         {
           data: {
-            assessments_and_candidates: results,
-            all_games: 'http//localhost:3000/api/v1/games',
+            user_information,
+            links: {
+              create_hr: CREATE_HR,
+              list_hrs: LIST_HRS,
+              user_info: USER_INFO,
+            },
           },
         },
         res,
       );
-    }
-  }
-
-  @Patch('user/update')
-  async updatePassword(
-    @Body() updateUserPasswordDto: UpdateUserPasswordDto,
-    @Res() res: Response,
-  ) {
-    const password = await this.usersService.updatePassword(
-      updateUserPasswordDto,
-    );
-
-    if (password) {
-      return this.successResponse(
-        {
-          message: 'Update password success',
-        },
-        res,
-      );
-    } else {
-      return this.errorsResponse({}, res);
     }
   }
 }

@@ -42,7 +42,7 @@ export class CreateAssessmentTable1711527737449 implements MigrationInterface {
             default: `'${AssessmentStatusEnum.INFINITE}'`,
           },
           {
-            name: 'max_result',
+            name: 'max_score',
             type: 'integer',
             isNullable: true,
           },
@@ -57,15 +57,15 @@ export class CreateAssessmentTable1711527737449 implements MigrationInterface {
           {
             name: 'updated_at',
             type: 'datetime',
-            isNullable: true,
           },
         ],
         foreignKeys: [
           new TableForeignKey({
             columnNames: ['hrId'],
-            name: 'fk_assessment_hr',
+            name: 'fk_assessment-hr',
             referencedColumnNames: ['id'],
             referencedTableName: 'users',
+            onDelete: 'CASCADE',
           }),
         ],
       }),

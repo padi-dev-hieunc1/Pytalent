@@ -18,7 +18,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     //response customize exception
     if (exception instanceof CustomizeException) {
       const responseException: any = exception.getResponse();
-      response.status(HttpStatus.OK).json({
+      response.status(responseException.statusCode).json({
         status: false,
         data: {},
         message: responseException.message,

@@ -30,10 +30,6 @@ export class CreateCandidateAssessmentTable1711695786844
             default: `'${CandidateAssessmentStatusEnum.PENDING}'`,
           },
           {
-            name: 'result',
-            type: 'integer',
-          },
-          {
             name: 'assessmentId',
             type: 'integer',
           },
@@ -49,20 +45,19 @@ export class CreateCandidateAssessmentTable1711695786844
           {
             name: 'updated_at',
             type: 'datetime',
-            isNullable: true,
           },
         ],
         foreignKeys: [
           new TableForeignKey({
             columnNames: ['candidateId'],
-            name: 'fk_candidate-assessment_candidate',
+            name: 'fk_candidate-assessment-candidate',
             referencedColumnNames: ['id'],
             referencedTableName: 'users',
             onDelete: 'CASCADE',
           }),
           new TableForeignKey({
             columnNames: ['assessmentId'],
-            name: 'fk_candidate-assessment_assessment',
+            name: 'fk_candidate-assessment-assessment',
             referencedColumnNames: ['id'],
             referencedTableName: 'assessments',
             onDelete: 'CASCADE',

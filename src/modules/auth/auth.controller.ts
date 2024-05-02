@@ -20,13 +20,14 @@ export class AuthController extends BaseController {
   @Post('/login')
   async login(@Body() loginDto: LoginDto, @Res() res: Response) {
     try {
-      await this.userService.checkUser(loginDto);
+      const user = await this.authService.getUserInfo(loginDto);
       const token = await this.authService.login(loginDto);
 
       return this.successResponse(
         {
           data: {
             token: token,
+            user: user,
           },
         },
         res,

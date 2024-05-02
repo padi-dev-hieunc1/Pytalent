@@ -1,17 +1,10 @@
 import 'reflect-metadata';
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  ManyToOne,
-  JoinColumn,
-  OneToMany,
-} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { BaseEntity } from '@entities/base.entity';
 import { GameCategoryEnum } from '@common/enum/game-category.enum';
-import { GameStatusEnum } from '@common/enum/game-status.enum';
-import { Assessments } from './assessments.entity';
-import { AnswerGames } from './answer-games.entity';
+import { HrGames } from './hr-games.entity';
+import { AssessmentGames } from './assessment-game.entity';
+import { GameResults } from './games-results.entity';
 
 @Entity()
 export class Games extends BaseEntity {
@@ -31,40 +24,12 @@ export class Games extends BaseEntity {
   @Column()
   total_question_level: number;
 
-  @Column()
-  max_score_level: number;
+  @OneToMany(() => HrGames, (hr_game) => hr_game.game)
+  hr_game: HrGames[];
 
-  @Column()
-  questions: string;
+  @OneToMany(() => AssessmentGames, (assessment_game) => assessment_game.game)
+  assessment_game: AssessmentGames[];
 
-  @Column()
-  complete_time: number;
-
-  @Column()
-  complete_question: number;
-
-  @Column({
-    name: 'status',
-    type: 'enum',
-    enum: GameStatusEnum,
-  })
-  status: GameStatusEnum;
-
-  @Column()
-  score: number;
-
-  @Column()
-  candidate_email: string;
-
-  @Column()
-  assessmentId: number;
-
-  @ManyToOne(() => Assessments, (assessment) => assessment.game, {
-    onDelete: 'CASCADE',
-  })
-  @JoinColumn({ name: 'assessmentId' })
-  assessment: Assessments;
-
-  @OneToMany(() => AnswerGames, (answer) => answer.game)
-  answer: AnswerGames[];
+  @OneToMany(() => GameResults, (game_result) => game_result.game)
+  game_result: GameResults[];
 }

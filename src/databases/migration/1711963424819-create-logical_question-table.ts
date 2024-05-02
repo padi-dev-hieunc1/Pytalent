@@ -46,7 +46,6 @@ export class CreateLogicalQuestionTable1711963424819
           {
             name: 'updated_at',
             type: 'datetime',
-            isNullable: true,
           },
         ],
       }),

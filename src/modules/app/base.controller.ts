@@ -12,6 +12,7 @@ export class BaseController {
       status: true,
       data: data ?? {},
       message: message ?? 'success',
+      httpStatus: HttpStatus.OK,
     });
   }
 
@@ -21,12 +22,13 @@ export class BaseController {
       status: false,
       data: data ?? {},
       message: message ?? 'errors',
+      httpStatus: HttpStatus.BAD_REQUEST,
     });
   }
 
   public apiResponse(@Res() res: Response, result: ApiResponseInterface) {
-    const { status, data, message } = result;
-    return res.status(HttpStatus.OK).json({
+    const { status, data, message, httpStatus } = result;
+    return res.status(httpStatus).json({
       status: status,
       data: data ?? {},
       message: message,

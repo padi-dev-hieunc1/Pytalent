@@ -8,7 +8,7 @@ export class CandidateAssessmentsRepository extends Repository<CandidateAssessme
     super(CandidateAssessmentsEntity, dataSource.createEntityManager());
   }
 
-  async findAllResults(): Promise<any> {
+  async findAllCandidateAssessments(): Promise<any> {
     return await this.find({
       relations: ['candidate', 'assessment'],
     });

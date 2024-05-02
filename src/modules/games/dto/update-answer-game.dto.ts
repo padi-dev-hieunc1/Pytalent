@@ -1,14 +1,14 @@
-import { IsNotEmpty } from 'class-validator';
+// import { IsNotEmpty } from 'class-validator';
 
-export class UpdateAnswerGameDto {
-  @IsNotEmpty()
-  gameId: number;
+// export class UpdateAnswerGameDto {
+//   @IsNotEmpty()
+//   gameId: number;
 
-  @IsNotEmpty()
-  questionId: number;
+//   @IsNotEmpty()
+//   questionId: number;
 
-  @IsNotEmpty()
-  candidate_answer: string;
+//   @IsNotEmpty()
+//   candidate_answer: string;
 
-  is_correct: number;
-}
+//   is_correct: number;
+// }

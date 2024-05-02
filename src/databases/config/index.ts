@@ -32,7 +32,7 @@ switch (db.dialect) {
     databaseConfig.password = db.password;
     databaseConfig.synchronize = db.synchronize;
     databaseConfig.logging = db.logging;
-    databaseConfig.timezone = db.timezone;
+    // databaseConfig.timezone = db.timezone;
     break;
   default:
     databaseConfig.type = 'sqlite';

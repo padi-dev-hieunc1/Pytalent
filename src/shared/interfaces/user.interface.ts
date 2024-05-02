@@ -11,9 +11,9 @@ export interface FindUserInterface {
   password: string;
 }
 
-export interface createUserInterface extends FindUserInterface {
+export interface CreateUserInterface extends FindUserInterface {
   username: string;
   role: RoleEnum;
 }
 
-export type UserGetResponse = Omit<UserModel, 'userId' | 'password'>;
+// export type UserGetResponse = Omit<UserModel, 'userId' | 'password'>;

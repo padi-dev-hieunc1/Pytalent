@@ -1,10 +1,14 @@
-import { IsEmail, IsNotEmpty } from 'class-validator';
+import { GameCategoryEnum } from '@common/enum/game-category.enum';
+import { IsEnum, IsNotEmpty } from 'class-validator';
 
 export class CreateGameDto {
   @IsNotEmpty()
-  assessmentId: number;
+  @IsEnum(GameCategoryEnum)
+  category: GameCategoryEnum;
 
   @IsNotEmpty()
-  @IsEmail()
-  candidate_email: string;
+  time_limit: number;
+
+  @IsNotEmpty()
+  total_question_level: number;
 }

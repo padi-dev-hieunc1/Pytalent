@@ -1,21 +1,15 @@
-export interface AnswerGamesModel {
-  id: number;
-  gameId: number;
+import { AnswerStatusEnum } from '@common/enum/answer-status.enum';
+
+export interface CreateInitialLogicalAnswerInterface {
+  resultId: number;
   questionId: number;
+  status: AnswerStatusEnum;
+}
+
+export interface AnswerLogicalQuestionInterface {
+  candidate_answer?: string;
+}
+
+export interface MemoryAnswerInterface {
   candidate_answer: string;
-  is_correct: number;
 }
-
-export interface CreateInitialAnswerInterface {
-  gameId: number;
-  questionId: number;
-}
-
-export interface UpdateAnswerInterface {
-  gameId: number;
-  questionId: number;
-  candidate_answer: string;
-  is_correct: number;
-}
-
-export type AssessmentGetResponse = Omit<AnswerGamesModel, 'id'>;

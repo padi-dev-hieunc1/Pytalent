@@ -42,7 +42,7 @@ export const env = {
     synchronize: toBool(getOsEnvOptional('DB_SYNCHRONIZE')),
     logging: getOsEnv('DB_LOGGING') === 'true',
     storage: getOsEnvOptional('DB_STORAGE'),
-    timezone: getOsEnv('DB_TIMEZONE'),
+    // timezone: getOsEnv('DB_TIMEZONE'),
   },
   jwt: {
     secret: getOsEnv('JWT_SECRET'),

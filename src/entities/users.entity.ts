@@ -11,6 +11,7 @@ import { RoleEnum } from '@enum/role.enum';
 import { Assessments } from './assessments.entity';
 import { HrGames } from './hr-games.entity';
 import { CandidateAssessments } from './candidate-assessment';
+import { GameResults } from './games-results.entity';
 
 @Entity()
 export class Users extends BaseEntity {
@@ -39,11 +40,14 @@ export class Users extends BaseEntity {
   assessment: Assessments[];
 
   @OneToMany(() => HrGames, (hr_game) => hr_game.hr)
-  hr: HrGames[];
+  hr_game: HrGames[];
 
   @OneToMany(
     () => CandidateAssessments,
     (candidate_assessment) => candidate_assessment.candidate,
   )
-  candidate: CandidateAssessments[];
+  candidate_assessment: CandidateAssessments[];
+
+  @OneToMany(() => GameResults, (game_result) => game_result.candidate)
+  game_result: GameResults[];
 }

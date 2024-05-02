@@ -1,7 +1,8 @@
 import 'reflect-metadata';
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { BaseEntity } from '@entities/base.entity';
 import { LogicalResultEnum } from '@common/enum/logical-result.enum';
+import { LogicalAnswers } from './logical-answers.entity';
 
 @Entity()
 export class LogicalQuestions extends BaseEntity {
@@ -26,4 +27,10 @@ export class LogicalQuestions extends BaseEntity {
     enum: LogicalResultEnum,
   })
   result: LogicalResultEnum;
+
+  @OneToMany(
+    () => LogicalAnswers,
+    (logical_answer) => logical_answer.logical_question,
+  )
+  logical_answer: LogicalAnswers[];
 }

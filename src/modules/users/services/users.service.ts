@@ -4,19 +4,19 @@ import * as bcrypt from 'bcrypt';
 import { Users } from '@entities/users.entity';
 import { plainToClass } from 'class-transformer';
 import {
-  createUserInterface,
+  CreateUserInterface,
   FindUserInterface,
 } from '@interfaces/user.interface';
-import { RoleEnum } from '@enum/role.enum';
 import { CustomizeException } from '@exception/customize.exception';
 import { I18nService } from 'nestjs-i18n';
-import { CandidateAssessmentsRepository } from '@modules/assessments/repositories/candidate-assessment.repository';
+import { RoleEnum } from '@common/enum/role.enum';
+// import { CandidateAssessmentsRepository } from '@modules/assessments/repositories/candidate-assessment.repository';
 
 @Injectable()
 export class UsersService {
   constructor(
     private usersRepository: UsersRepository,
-    private candidateAssessmentRepository: CandidateAssessmentsRepository,
+    // private candidateAssessmentRepository: CandidateAssessmentsRepository,
     private readonly i18n: I18nService,
   ) {}
 
@@ -33,34 +33,54 @@ export class UsersService {
     }
   }
 
-  async createUser(params: createUserInterface) {
-    const existedUser = this.checkUser(params);
-    let user: createUserInterface & Users;
+  async createUser(params: CreateUserInterface) {
+    const notExistedUser = this.checkUser(params);
+    let user: CreateUserInterface & Users;
 
-    if (existedUser) {
-      const paramCreate: createUserInterface = plainToClass(Users, {
+    if (notExistedUser) {
+      const paramCreate: CreateUserInterface = plainToClass(Users, {
         email: params.email,
         password: await bcrypt.hash(params.password, 10),
         username: params.username,
-        role: RoleEnum.HR,
+        role: params.role,
       });
       user = await this.usersRepository.save(paramCreate);
     }
     return user;
   }
 
-  async getUserInformationByEmail(params: any) {
-    const { email } = params;
+  async createHr(params: CreateUserInterface) {
+    const notExistedUser = this.checkUser(params);
+    let hr: CreateUserInterface & Users;
+
+    if (notExistedUser) {
+      if (params.role !== RoleEnum.HR) {
+        throw new CustomizeException(this.i18n.t('message.ROLE_MUST_BE_HR'));
+      }
+
+      const paramCreate: CreateUserInterface = plainToClass(Users, {
+        email: params.email,
+        password: await bcrypt.hash(params.password, 10),
+        username: params.username,
+        role: RoleEnum.HR,
+      });
+      hr = await this.usersRepository.save(paramCreate);
+    }
+    return hr;
+  }
+
+  async getUserInformationById(userId: number) {
     const user: Users = await this.usersRepository.findOne({
       where: {
-        email: email,
+        id: userId,
       },
+      select: ['email', 'username', 'role'],
     });
 
     if (user) {
       return user;
     }
-    throw new CustomizeException(this.i18n.t('message.IS_INCORRECT_EMAIL'));
+    throw new CustomizeException(this.i18n.t('message.USER_NOT_FOUND'));
   }
 
   async getListHr() {
@@ -69,31 +89,32 @@ export class UsersService {
     return listHrs;
   }
 
-  async getAllResults() {
-    const results = await this.candidateAssessmentRepository.findAllResults();
-
-    if (results) {
-      return results;
-    } else {
-      throw new CustomizeException(this.i18n.t('message.RESULT_NOT_FOUND'));
-    }
-  }
-
   async updatePassword(params: FindUserInterface) {
-    const candidate: Users = await this.usersRepository.findOne({
+    const user: Users = await this.usersRepository.findOne({
       where: {
         email: params.email,
       },
     });
 
-    if (candidate) {
+    if (user) {
+      const isPasswordValid = await bcrypt.compare(
+        params.password,
+        user.password,
+      );
+
+      if (isPasswordValid) {
+        throw new CustomizeException(
+          this.i18n.t('message.PASSWORD_NOT_CHANGE'),
+        );
+      }
+
       const paramUpdate: FindUserInterface = plainToClass(Users, {
         email: params.email,
         password: await bcrypt.hash(params.password, 10),
       });
 
       const updatedUser = await this.usersRepository.update(
-        candidate.id,
+        user.id,
         paramUpdate,
       );
 

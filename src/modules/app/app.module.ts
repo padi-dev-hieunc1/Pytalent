@@ -12,21 +12,26 @@ import {
 import { ThrottlerModule } from '@nestjs/throttler';
 import { UsersModule } from '@modules/users/users.module';
 import { AuthModule } from '@modules/auth/auth.module';
-import { MailerModule } from '@nestjs-modules/mailer';
 import { HppMiddleware } from '@middleware/hpp.middleware';
 import { Users } from '@entities/users.entity';
 import { Assessments } from '@entities/assessments.entity';
-import { Games } from '@entities/games.entity';
 import { HrGames } from '@entities/hr-games.entity';
-import { AssessmentsModule } from '@modules/assessments/assessments.module';
 import { CandidateAssessments } from '@entities/candidate-assessment';
 import { LogicalQuestions } from '@entities/logical-questions.entity';
-import { MemoryQuestions } from '@entities/memory-questions.entity';
-import { GamesModule } from '@modules/games/games.module';
-import { AnswerGames } from '@entities/answer-games.entity';
-import { env } from '@env';
 import { ConfigModule } from '@nestjs/config';
-// import { env } from '@env';
+import { Games } from '@entities/games.entity';
+import { AssessmentGames } from '@entities/assessment-game.entity';
+import { GameResults } from '@entities/games-results.entity';
+import { LogicalAnswers } from '@entities/logical-answers.entity';
+import { MemoryAnswers } from '@entities/memory-answers.entity';
+import { GamesModule } from '@modules/games/games.module';
+import { env } from '@env';
+import { HrGamesModule } from '@modules/hr-games/hr-game.module';
+import { AssessmentsModule } from '@modules/assessments/assessments.module';
+import { AssessmentGamesModule } from '@modules/assessment-games/assessment-game.module';
+import { GameResultsModule } from '@modules/results/result.module';
+import { LogicalQuestionsModule } from '@modules/logical-questions/logical-question.module';
+import { MailerModule } from '@nestjs-modules/mailer';
 // import { MailModule } from '@modules/mail/mail.module';
 
 const options = databaseConfig as TypeOrmModuleOptions;
@@ -45,8 +50,10 @@ const options = databaseConfig as TypeOrmModuleOptions;
       HrGames,
       CandidateAssessments,
       LogicalQuestions,
-      MemoryQuestions,
-      AnswerGames,
+      AssessmentGames,
+      GameResults,
+      LogicalAnswers,
+      MemoryAnswers,
     ]),
 
     TypeOrmModule.forRoot({
@@ -78,6 +85,10 @@ const options = databaseConfig as TypeOrmModuleOptions;
     AuthModule,
     AssessmentsModule,
     GamesModule,
+    HrGamesModule,
+    AssessmentGamesModule,
+    GameResultsModule,
+    LogicalQuestionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

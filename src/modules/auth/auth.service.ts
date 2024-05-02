@@ -1,14 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersRepository } from '@modules/users/repositories/user.repository';
-import { I18nService } from 'nestjs-i18n';
+import { FindUserInterface } from '@shared/interfaces/user.interface';
 
 @Injectable()
 export class AuthService {
   constructor(
     private userRepository: UsersRepository,
     private jwtService: JwtService,
-    private readonly i18n: I18nService,
   ) {}
 
   async login(params: any) {
@@ -17,5 +16,17 @@ export class AuthService {
     if (user) {
       return this.jwtService.sign(JSON.parse(JSON.stringify(user)));
     }
+  }
+
+  async getUserInfo(params: FindUserInterface) {
+    const user = await this.userRepository.findOne({
+      where: {
+        email: params.email,
+      },
+      select: ['id', 'email'],
+    });
+
+    if (user) return user;
+    else return null;
   }
 }

@@ -5,17 +5,18 @@ import { MailerService } from '@nestjs-modules/mailer';
 export class MailService {
   constructor(private readonly mailerService: MailerService) {}
 
-  sendInvitationEmail(email: string, data: any) {
+  sendInvitationEmail(email: string) {
     // Construct email HTML with placeholders
     const htmlContent = `
       <p>Hello,</p>
       <p>You have been invited to participate in the following assessments:</p>
-      <p>Please follow this link to proceed: <a href="${data.assessment}">${data.assessment}</a></p>
-      <p>You need to change your password and login to our system to do assessment</p>
+      <ul>
+        <li>Assessment: <a href="#">Link assessment here</a></li>
+      </ul>
+      <p>Before doing assessment, you need to change your password to login our system</p>
       <p>Follow the instructions:</p>
       <ul>
-        <li>Update Password: <a href="${data.update_password}">${data.update_password}</a></li>
-        <li>Login: <a href="${data.login}">${data.login}</a></li>
+        <li>Update Password: <a href="#">Link update password here</a></li>
       </ul>
       <p>Best regards,</p>
       <p>Pytalent</p>

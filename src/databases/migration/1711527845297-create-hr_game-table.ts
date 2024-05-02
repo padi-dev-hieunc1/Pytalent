@@ -1,4 +1,3 @@
-import { GameCategoryEnum } from '@common/enum/game-category.enum';
 import {
   MigrationInterface,
   QueryRunner,
@@ -22,9 +21,8 @@ export class CreateHrGameTable1711527845297 implements MigrationInterface {
             generationStrategy: 'increment',
           },
           {
-            name: 'category',
-            type: 'enum',
-            enum: Object.values(GameCategoryEnum),
+            name: 'gameId',
+            type: 'integer',
           },
           {
             name: 'hrId',
@@ -37,15 +35,20 @@ export class CreateHrGameTable1711527845297 implements MigrationInterface {
           {
             name: 'updated_at',
             type: 'datetime',
-            isNullable: true,
           },
         ],
         foreignKeys: [
           new TableForeignKey({
             columnNames: ['hrId'],
-            name: 'fk_hr_game',
+            name: 'fk_hr_game-hr',
             referencedColumnNames: ['id'],
             referencedTableName: 'users',
+          }),
+          new TableForeignKey({
+            columnNames: ['gameId'],
+            name: 'fk_hr_game-game',
+            referencedColumnNames: ['id'],
+            referencedTableName: 'games',
           }),
         ],
       }),

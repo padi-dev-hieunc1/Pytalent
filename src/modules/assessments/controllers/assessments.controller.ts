@@ -13,45 +13,98 @@ import { BaseController } from '@modules/app/base.controller';
 import { JwtAuthGuard } from '@guards/jwt-auth.guard';
 import { AuthorizationGuard } from '@guards/authorization.guard';
 import { RoleEnum } from '@common/enum/role.enum';
-import { CreateAssessmentDto } from '../dto/create-assessment.dto';
-import { AssessmentsService } from '../services/assessment.service';
 import { Response } from 'express';
-import { Assessments } from '@entities/assessments.entity';
 import { AssessmentStatusEnum } from '@common/enum/assessment-status.enum';
-import { CandidateAssessmentDto } from '../dto/candidate-assessment.dto';
-import { CustomizeException } from '@exception/customize.exception';
-import { I18nService } from 'nestjs-i18n';
 import { MailService } from '@modules/mail/mail.service';
+import { AssessmentsService } from '../services/assessment.service';
+import { CreateAssessmentDto } from '../dto/create-assessment.dto';
+import { CandidateAssessmentDto } from '../dto/candidate-assessment.dto';
+import {
+  CREATE_ASSESSMENT,
+  DELETE_ASSESSMENT,
+  GET_ASSESSMENTS_BY_HR_ID,
+  GET_DETAIL_ASSESSMENT,
+  INVITE_CANDIDATE,
+  UPDATE_PASSWORD,
+} from '@shared/constant/constants';
 
 @Controller('api/v1/assessments')
 export class AssessmentsController extends BaseController {
   constructor(
     private readonly assessmentService: AssessmentsService,
-    private readonly i18n: I18nService,
     private readonly mailService: MailService,
   ) {
     super();
   }
 
+  @Post('/create')
+  @UseGuards(JwtAuthGuard, new AuthorizationGuard([RoleEnum.HR]))
+  async createAssessment(
+    @Body() createAssessmentDto: CreateAssessmentDto,
+    @Res() res: Response,
+  ) {
+    const new_assessment = await this.assessmentService.createAssessment(
+      createAssessmentDto,
+    );
+
+    if (
+      new_assessment &&
+      new_assessment.status !== AssessmentStatusEnum.EXPIRED
+    ) {
+      return this.successResponse(
+        {
+          data: {
+            new_assessment,
+            links: {
+              create_assessment: CREATE_ASSESSMENT,
+              get_assessments_by_hr_id: GET_ASSESSMENTS_BY_HR_ID,
+              get_detail_assessment: GET_DETAIL_ASSESSMENT,
+              delete_assessment: DELETE_ASSESSMENT,
+              invite_candidate: INVITE_CANDIDATE,
+              update_password: UPDATE_PASSWORD,
+            },
+          },
+          message: 'Assessment created',
+        },
+        res,
+      );
+    }
+  }
+
   @Get('/:hrId')
   @UseGuards(JwtAuthGuard, new AuthorizationGuard([RoleEnum.HR]))
-  async getAllAssessmentsByHr(
+  async getAllAssessmentsByHrId(
     @Param('hrId') hrId: number,
     @Res() res: Response,
   ) {
-    const assessments = await this.assessmentService.getAllAssessmentsByHr(
+    const assessments = await this.assessmentService.getAllAssessmentsByHrId(
       hrId,
     );
 
     if (assessments.length > 0) {
-      const assessment_links = assessments.map((assessment) => ({
-        name: assessment.name,
-        link: `http://localhost:3000/api/v1/assessments/detail/${assessment.id}`,
-      }));
+      // Have 2 options: remove expired assessment immediately -> return in updateStatusAssessment -> if ok push new array
+      // or set assessment's status to expired -> set status -> still get all assessment include expired assessment
+
+      for (const assessment of assessments) {
+        await this.assessmentService.updateStatusAssessment(assessment.id);
+      }
+
+      const updated_assessments =
+        await this.assessmentService.getAllAssessmentsByHrId(hrId);
 
       return this.successResponse(
         {
-          data: assessment_links,
+          data: {
+            updated_assessments,
+            links: {
+              create_assessment: CREATE_ASSESSMENT,
+              get_assessments_by_hr_id: GET_ASSESSMENTS_BY_HR_ID,
+              get_detail_assessment: GET_DETAIL_ASSESSMENT,
+              delete_assessment: DELETE_ASSESSMENT,
+              invite_candidate: INVITE_CANDIDATE,
+              update_password: UPDATE_PASSWORD,
+            },
+          },
           message: 'success',
         },
         res,
@@ -60,35 +113,6 @@ export class AssessmentsController extends BaseController {
       return this.errorsResponse(
         {
           message: 'Hr has not created any assessments before',
-        },
-        res,
-      );
-    }
-  }
-
-  @Post('/create')
-  @UseGuards(JwtAuthGuard, new AuthorizationGuard([RoleEnum.HR]))
-  async createAssessment(
-    @Body() createAssessmentDto: CreateAssessmentDto & Assessments,
-    @Res() res: Response,
-  ) {
-    const newAssessment = await this.assessmentService.createAssessment(
-      createAssessmentDto,
-    );
-
-    if (
-      newAssessment &&
-      newAssessment.status !== AssessmentStatusEnum.EXPIRED
-    ) {
-      return this.successResponse(
-        {
-          data: {
-            newAssessment,
-            links: {
-              assessment: `http://localhost:3000/api/v1/assessments/detail/${newAssessment.id}`,
-            },
-          },
-          message: 'Assessment created',
         },
         res,
       );
@@ -113,15 +137,16 @@ export class AssessmentsController extends BaseController {
         {
           data: {
             assessment,
+            links: {
+              create_assessment: CREATE_ASSESSMENT,
+              get_assessments_by_hr_id: GET_ASSESSMENTS_BY_HR_ID,
+              get_detail_assessment: GET_DETAIL_ASSESSMENT,
+              delete_assessment: DELETE_ASSESSMENT,
+              invite_candidate: INVITE_CANDIDATE,
+              update_password: UPDATE_PASSWORD,
+            },
           },
           message: 'success',
-        },
-        res,
-      );
-    } else {
-      return this.errorsResponse(
-        {
-          message: 'Not exist this assessment',
         },
         res,
       );
@@ -137,10 +162,20 @@ export class AssessmentsController extends BaseController {
     const assessment = await this.assessmentService.deleteAssessment(
       assessmentId,
     );
-    console.log('checckkdelete:::', assessment);
+
     if (assessment.affected) {
       return this.successResponse(
         {
+          data: {
+            links: {
+              create_assessment: CREATE_ASSESSMENT,
+              get_assessments_by_hr_id: GET_ASSESSMENTS_BY_HR_ID,
+              get_detail_assessment: GET_DETAIL_ASSESSMENT,
+              delete_assessment: DELETE_ASSESSMENT,
+              invite_candidate: INVITE_CANDIDATE,
+              update_password: UPDATE_PASSWORD,
+            },
+          },
           message: 'deleted success',
         },
         res,
@@ -169,27 +204,28 @@ export class AssessmentsController extends BaseController {
     const filteredInvites = invites.filter((invite) => invite !== null);
 
     if (filteredInvites.length > 0) {
-      const data = {
-        invites: filteredInvites,
-        links: {
-          update_password: 'http://localhost:3000/api/v1/user/update',
-          login: 'http://localhost:3000/api/v1/login',
-          assessment: `http://localhost:3000/api/v1/assessments/detail/${candidateAssessmentDto.assessmentId}`,
-        },
-      };
-
       // Send email for candidates
       for (const invite of filteredInvites) {
         const candidate = await this.assessmentService.getCandidateInformation(
           invite.candidateId,
         );
-        console.log('check candidate::', candidate);
-        this.mailService.sendInvitationEmail(candidate.email, data.links);
+
+        this.mailService.sendInvitationEmail(candidate.email);
       }
 
       return this.successResponse(
         {
-          data: data,
+          data: {
+            invites: filteredInvites,
+            links: {
+              create_assessment: CREATE_ASSESSMENT,
+              get_assessments_by_hr_id: GET_ASSESSMENTS_BY_HR_ID,
+              get_detail_assessment: GET_DETAIL_ASSESSMENT,
+              delete_assessment: DELETE_ASSESSMENT,
+              invite_candidate: INVITE_CANDIDATE,
+              update_password: UPDATE_PASSWORD,
+            },
+          },
           message: 'invited success',
         },
         res,
@@ -204,51 +240,21 @@ export class AssessmentsController extends BaseController {
     }
   }
 
-  @Get('score/:assessmentId')
-  @UseGuards(
-    JwtAuthGuard,
-    new AuthorizationGuard([RoleEnum.HR, RoleEnum.CANDIDATE]),
-  )
-  async calculateTotalScoreOfAssessment(
-    @Param('assessmentId') assessmentId: number,
-    @Res() res: Response,
-  ) {
-    const max_score =
-      await this.assessmentService.calculateTotalScoreOfAssessment(
-        assessmentId,
-      );
-
-    if (max_score) {
-      return this.successResponse(
-        {
-          data: {
-            total_score: max_score,
-          },
-          message: 'success',
-        },
-        res,
-      );
-    } else {
-      throw new CustomizeException(this.i18n.t('message.ASSESSMENT_NOT_FOUND'));
-    }
-  }
-
-  // @Patch('score/update')
+  // @Patch('update/:assessmentId')
   // @UseGuards(JwtAuthGuard, new AuthorizationGuard([RoleEnum.HR]))
-  // async UpdateScoreCandidateAssessment(
+  // async updateAssessment(
   //   @Param('assessmentId') assessmentId: number,
   //   @Res() res: Response,
   // ) {
-  //   const max_score =
-  //     await this.assessmentService.UpdateScoreCandidateAssessment(assessmentId);
+  //   const updated_assessment = await this.assessmentService.updateAssessment(
+  //     assessmentId,
+  //   );
 
-  //   if (max_score) {
+  //   if (updated_assessment.affected) {
   //     return this.successResponse(
   //       {
-  //         data: {
-  //           total_score: max_score,
-  //         },
-  //         message: 'success',
+  //         data: {},
+  //         message: 'update success',
   //       },
   //       res,
   //     );

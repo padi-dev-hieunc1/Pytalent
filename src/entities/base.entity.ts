@@ -15,11 +15,12 @@ export class BaseEntity {
 
   @BeforeInsert()
   setCreatedAt(): void {
-    this.created_at = new Date(new Date().getTime() + 7 * 60 * 60 * 1000);
+    // this.created_at = new Date(new Date().getTime() + 7 * 60 * 60 * 1000);
+    this.created_at = new Date();
   }
 
   @BeforeUpdate()
   setUpdatedAt(): void {
-    this.updated_at = new Date(new Date().getTime() + 7 * 60 * 60 * 1000);
+    this.updated_at = new Date();
   }
 }

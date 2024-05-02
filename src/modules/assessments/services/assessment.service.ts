@@ -1,24 +1,22 @@
 import { Injectable } from '@nestjs/common';
-import { AssessmentsRepository } from '../repositories/assessment.repository';
-import { CreateAssessmentInterface } from '@shared/interfaces/assessment.interface';
-import { Assessments } from '@entities/assessments.entity';
-import { plainToClass } from 'class-transformer';
-import { AssessmentStatusEnum } from '@common/enum/assessment-status.enum';
-import { Users } from '@entities/users.entity';
 import { UsersRepository } from '@modules/users/repositories/user.repository';
 import * as moment from 'moment';
-import { createUserInterface } from '@shared/interfaces/user.interface';
-import { CandidateAssessmentInterface } from '@shared/interfaces/candidate-assessment.interface';
+import { I18nService } from 'nestjs-i18n';
+import { AssessmentsRepository } from '../repositories/assessment.repository';
+import { CustomizeException } from '@exception/customize.exception';
+import { plainToClass } from 'class-transformer';
+import { Assessments } from '@entities/assessments.entity';
+import { CreateAssessmentInterface } from '@shared/interfaces/assessment.interface';
+import { AssessmentStatusEnum } from '@common/enum/assessment-status.enum';
+import { Users } from '@entities/users.entity';
 import { RoleEnum } from '@common/enum/role.enum';
+import { CandidateAssessmentDto } from '../dto/candidate-assessment.dto';
+import { CandidateAssessmentInterface } from '@shared/interfaces/candidate-assessment.interface';
+import { CandidateAssessmentStatusEnum } from '@common/enum/candidate-assessment-status.enum';
 import { CandidateAssessments } from '@entities/candidate-assessment';
 import { CandidateAssessmentsRepository } from '../repositories/candidate-assessment.repository';
-import { CandidateAssessmentDto } from '../dto/candidate-assessment.dto';
-import { CandidateAssessmentStatusEnum } from '@common/enum/candidate-assessment-status.enum';
-import { CustomizeException } from '@exception/customize.exception';
-import { I18nService } from 'nestjs-i18n';
-import { getConnection } from 'typeorm';
-import { Games } from '@entities/games.entity';
-import { AnswerGames } from '@entities/answer-games.entity';
+import { CreateUserInterface } from '@shared/interfaces/user.interface';
+import { AssessmentGamesService } from '@modules/assessment-games/services/assessment-game.service';
 
 @Injectable()
 export class AssessmentsService {
@@ -26,28 +24,35 @@ export class AssessmentsService {
     private assessmentsRepository: AssessmentsRepository,
     private usersRepository: UsersRepository,
     private candidateAssessmentsRepository: CandidateAssessmentsRepository,
+    private assessmentGameService: AssessmentGamesService,
     private readonly i18n: I18nService,
   ) {}
 
-  async createAssessment(params: CreateAssessmentInterface) {
-    let assessment: CreateAssessmentInterface;
-
+  async checkExistedHr(hrId: number) {
     const hr: Users = await this.usersRepository.findOne({
       where: {
-        id: params.hrId,
+        id: hrId,
         role: RoleEnum.HR,
       },
     });
 
-    if (hr) {
+    if (hr) return true;
+    else return false;
+  }
+
+  async createAssessment(params: CreateAssessmentInterface) {
+    let assessment: CreateAssessmentInterface;
+
+    const existed_hr = await this.checkExistedHr(params.hrId);
+
+    if (existed_hr) {
       const endTime = params.end_time
-        ? moment(params.end_time, 'YYYY-MM-DD HH:mm:ss').utc(true).toDate()
+        ? moment(params.end_time, 'YYYY-MM-DD HH:mm:ss').toDate()
         : null;
 
-      const currentTime = new Date(new Date().getTime() + 7 * 60 * 60 * 1000);
-
+      const currentTime = new Date();
       const startTime = params.start_time
-        ? moment(params.start_time, 'YYYY-MM-DD HH:mm:ss').utc(true).toDate()
+        ? moment(params.start_time, 'YYYY-MM-DD HH:mm:ss').toDate()
         : currentTime;
 
       let statusAssessment = params.status;
@@ -55,8 +60,9 @@ export class AssessmentsService {
       if (endTime === null) {
         statusAssessment = AssessmentStatusEnum.INFINITE;
       } else {
-        // endTime < currentTime -> Expired -> Do not create new assessment
-        endTime.getTime() > startTime.getTime()
+        // endTime < currentTime | endTime < startTime -> Expired -> Do not create new assessment
+        endTime.getTime() > startTime.getTime() &&
+        endTime.getTime() > currentTime.getTime()
           ? (statusAssessment = AssessmentStatusEnum.LIMIT_END_TIME)
           : (statusAssessment = AssessmentStatusEnum.EXPIRED);
       }
@@ -72,7 +78,7 @@ export class AssessmentsService {
       if (statusAssessment !== 'Expired') {
         assessment = await this.assessmentsRepository.save(paramCreate);
       } else {
-        throw new CustomizeException(this.i18n.t('message.ASSESSMENT_EXPIRED'));
+        throw new CustomizeException(this.i18n.t('message.INVALID_END_TIME'));
       }
 
       return assessment;
@@ -86,25 +92,21 @@ export class AssessmentsService {
       where: {
         id: assessmentId,
       },
-      relations: ['game', 'hr'],
     });
 
-    return assessment;
+    if (assessment) return assessment;
+    else
+      throw new CustomizeException(this.i18n.t('message.ASSESSMENT_NOT_FOUND'));
   }
 
-  async getAllAssessmentsByHr(hrId: number) {
-    const hr: Users = await this.usersRepository.findOne({
-      where: {
-        id: hrId,
-        role: RoleEnum.HR,
-      },
-    });
+  async getAllAssessmentsByHrId(hrId: number) {
+    const existed_hr = await this.checkExistedHr(hrId);
 
-    if (hr) {
-      const listAssessments: Assessments[] =
+    if (existed_hr) {
+      const list_assessments: Assessments[] =
         await this.assessmentsRepository.findAllAssessments(hrId);
 
-      if (listAssessments) return listAssessments;
+      if (list_assessments) return list_assessments;
       else return null;
     } else {
       throw new CustomizeException(this.i18n.t('message.HR_NOT_FOUND'));
@@ -112,13 +114,10 @@ export class AssessmentsService {
   }
 
   async deleteAssessment(assessmentId: number) {
-    const assessment: Assessments = await this.assessmentsRepository.findOne({
-      where: {
-        id: assessmentId,
-      },
-    });
+    const existed_assessment =
+      await this.assessmentGameService.checkExistedAssessment(assessmentId);
 
-    if (assessment) {
+    if (existed_assessment) {
       return await this.assessmentsRepository
         .createQueryBuilder()
         .delete()
@@ -137,30 +136,34 @@ export class AssessmentsService {
       },
     });
 
-    console.log(assessment);
-
-    const listCandidates: Users[] = [];
-    const listCandidateAssessments: CandidateAssessmentInterface[] = [];
-
-    if (assessment) {
-      for (const email of params.list_candidate_emails) {
-        const candidate = await this.createCandidate(email);
-        listCandidates.push(candidate);
-      }
-
-      for (const candidate of listCandidates) {
-        const candidateAssessment = await this.createCandidateAssessment({
-          assessmentId: params.assessmentId,
-          candidateId: candidate.id,
-          status: CandidateAssessmentStatusEnum.PENDING,
-        });
-
-        listCandidateAssessments.push(candidateAssessment);
-      }
-
-      return listCandidateAssessments;
+    if (assessment.status === AssessmentStatusEnum.EXPIRED) {
+      throw new CustomizeException(this.i18n.t('message.ASSESSMENT_EXPIRED'));
     } else {
-      throw new CustomizeException(this.i18n.t('message.ASSESSMENT_NOT_FOUND'));
+      const listCandidates: Users[] = [];
+      const listCandidateAssessments: CandidateAssessmentInterface[] = [];
+
+      if (assessment) {
+        for (const email of params.list_candidate_emails) {
+          const candidate = await this.createCandidate(email);
+          listCandidates.push(candidate);
+        }
+
+        for (const candidate of listCandidates) {
+          const candidateAssessment = await this.createCandidateAssessment({
+            assessmentId: params.assessmentId,
+            candidateId: candidate.id,
+            status: CandidateAssessmentStatusEnum.PENDING,
+          });
+
+          listCandidateAssessments.push(candidateAssessment);
+        }
+
+        return listCandidateAssessments;
+      } else {
+        throw new CustomizeException(
+          this.i18n.t('message.ASSESSMENT_NOT_FOUND'),
+        );
+      }
     }
   }
 
@@ -175,7 +178,7 @@ export class AssessmentsService {
     const username = email.split('@')[0].toUpperCase();
 
     if (!candidate) {
-      const paramCreate: createUserInterface = plainToClass(Users, {
+      const paramCreate: CreateUserInterface = plainToClass(Users, {
         email: email,
         // password: await bcrypt.hash(password, 10),
         password: password,
@@ -241,19 +244,50 @@ export class AssessmentsService {
     }
   }
 
-  async calculateTotalScoreOfAssessment(assessmentId: number) {
-    const games = (await this.getDetailAssessment(assessmentId)).game;
-    if (games) {
-      let max_score = 0;
-      for (const game of games) {
-        max_score += game.max_score_level;
-      }
+  async updateScoreAssessment(assessmentId: number) {
+    const games = await this.assessmentGameService.getAllGamesInAssessment(
+      assessmentId,
+    );
 
-      return max_score;
+    let max_score = 0;
+    if (games) {
+      for (const game of games) {
+        max_score += game.game.total_question_level;
+      }
+    }
+    const updated_assessment = plainToClass(Assessments, {
+      max_score: max_score,
+    });
+
+    return await this.assessmentsRepository.update(
+      assessmentId,
+      updated_assessment,
+    );
+  }
+
+  async updateStatusAssessment(assessmentId: number) {
+    const assessment: Assessments = await this.assessmentsRepository.findOne({
+      where: {
+        id: assessmentId,
+      },
+    });
+
+    if (assessment) {
+      const currentTime = new Date();
+      const endTime = assessment.end_time;
+
+      if (endTime.getTime() < currentTime.getTime()) {
+        const updated_assessment = plainToClass(Assessments, {
+          status: AssessmentStatusEnum.EXPIRED,
+        });
+
+        await this.assessmentsRepository.update(
+          assessmentId,
+          updated_assessment,
+        );
+      }
     } else {
-      throw new CustomizeException(
-        this.i18n.t('message.GAME_NOT_FOUND_IN_ASSESSMENT'),
-      );
+      throw new CustomizeException(this.i18n.t('message.ASSESSMENT_NOT_FOUND'));
     }
   }
 

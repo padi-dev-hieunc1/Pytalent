@@ -24,15 +24,12 @@ export class CandidateAssessments extends BaseEntity {
   status: CandidateAssessmentStatusEnum;
 
   @Column()
-  result: number;
-
-  @Column()
   candidateId: number;
 
   @Column()
   assessmentId: number;
 
-  @ManyToOne(() => Users, (user) => user.candidate)
+  @ManyToOne(() => Users, (user) => user.candidate_assessment)
   @JoinColumn({ name: 'candidateId' })
   candidate: Users;
 

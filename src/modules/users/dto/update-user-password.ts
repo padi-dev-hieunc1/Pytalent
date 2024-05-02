@@ -6,5 +6,6 @@ export class UpdateUserPasswordDto {
   email: string;
 
   @IsNotEmpty()
+  // new password
   password: string;
 }
