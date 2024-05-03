@@ -71,8 +71,6 @@ export class LogicalAnswersController extends BaseController {
         resultId,
       );
 
-      console.log('check next question::', next_question);
-
       if (
         game_result.complete_time <= 300 &&
         game_result.status === GameResultStatusEnum.NOT_COMPLETED &&

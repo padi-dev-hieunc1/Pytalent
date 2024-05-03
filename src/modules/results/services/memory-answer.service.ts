@@ -1,18 +1,22 @@
 import { Injectable } from '@nestjs/common';
-import { I18nService } from 'nestjs-i18n';
-import { CustomizeException } from '@exception/customize.exception';
 import { MemoryAnswers } from '@entities/memory-answers.entity';
 import { plainToClass } from 'class-transformer';
 import { AnswerStatusEnum } from '@common/enum/answer-status.enum';
 import { MemoryAnswersRepository } from '../repositories/memory-answer.repository';
 import { MemoryAnswerInterface } from '@shared/interfaces/answer.interface';
 import { GameResultsService } from './result.service';
+import { ContinueGameResultInterface } from '@shared/interfaces/game-result.interface';
+import { GameResults } from '@entities/games-results.entity';
+import { CustomizeException } from '@exception/customize.exception';
+import { GameResultsRepository } from '../repositories/result.repository';
+import { I18nService } from 'nestjs-i18n';
 
 @Injectable()
 export class MemoryAnswersService {
   constructor(
     private memoryAnswerRepository: MemoryAnswersRepository,
     private gameResultService: GameResultsService,
+    private gameResultRepository: GameResultsRepository,
     private readonly i18n: I18nService,
   ) {}
   async createMemoryAnswer(resultId: number, level: number) {
@@ -112,5 +116,42 @@ export class MemoryAnswersService {
     );
 
     return updated_memory_answer;
+  }
+
+  async continueMemoryGame(params: ContinueGameResultInterface) {
+    const game_result = await this.gameResultRepository.findOne({
+      where: {
+        assessmentId: params.assessmentId,
+        gameId: params.gameId,
+        candidateId: params.candidateId,
+      },
+    });
+
+    const resultId = game_result.id;
+    const current_level = game_result.current_question_level;
+
+    if (game_result) {
+      const paramUpdate = plainToClass(GameResults, {
+        updated_at: new Date(),
+      });
+
+      const updated_game_result = await this.gameResultRepository.update(
+        resultId,
+        paramUpdate,
+      );
+
+      if (updated_game_result.affected === 1) {
+        const next_level = await this.getDetailMemoryAnswer(
+          resultId,
+          current_level,
+        );
+
+        return next_level;
+      } else {
+        return null;
+      }
+    } else {
+      throw new CustomizeException(this.i18n.t('message.RESULT_NOT_FOUND'));
+    }
   }
 }

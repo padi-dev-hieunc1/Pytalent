@@ -7,6 +7,7 @@ const GAME_API_URL = `${API_URL}/games`;
 const ASSESSMENT_GAME_API_URL = `${API_URL}/assessment-games`;
 const LOGICAL_QUESTION_API_URL = `${API_URL}/logical-questions`;
 const ASSESSMENT_API_URL = `${API_URL}/assessments`;
+const GAME_RESULT_API_URL = `${API_URL}/results`;
 
 // ADMIN - USER
 export const CREATE_HR = `${ADMIN_API_URL}/create-hr`;
@@ -43,4 +44,5 @@ export const RANDOM_LOGICAL_QUESTIONS = `${LOGICAL_QUESTION_API_URL}/random`;
 export const GET_DETAIL_LOGICAL_QUESTION = `${LOGICAL_QUESTION_API_URL}/detail/:questionId`;
 export const DELETE_LOGICAL_QUESTION = `${LOGICAL_QUESTION_API_URL}/delete`;
 
-// ANSWER
+// GAME_RESULT
+export const CONTINUE_GAME = `${GAME_RESULT_API_URL}/continue`;

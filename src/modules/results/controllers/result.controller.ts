@@ -1,12 +1,4 @@
-import {
-  Body,
-  Controller,
-  HttpStatus,
-  Post,
-  Redirect,
-  Res,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Get, Post, Res, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '@guards/jwt-auth.guard';
 import { Response } from 'express';
 import { BaseController } from '@modules/app/base.controller';
@@ -21,13 +13,14 @@ import { LogicalQuestionsService } from '@modules/logical-questions/service/logi
 import { GameCategoryEnum } from '@common/enum/game-category.enum';
 import { GamesService } from '@modules/games/services/games.service';
 import { MemoryAnswersService } from '../services/memory-answer.service';
+import { CONTINUE_GAME } from '@shared/constant/constants';
 
 @Controller('api/v1/results')
 export class GameResultsController extends BaseController {
   constructor(
     private readonly gameResultService: GameResultsService,
     private logicalAnswerService: LogicalAnswersService,
-    private memoryAnswerService: MemoryAnswersService,
+    private readonly memoryAnswerService: MemoryAnswersService,
     private logicalQuestionService: LogicalQuestionsService,
     private gameService: GamesService,
   ) {
@@ -100,9 +93,12 @@ export class GameResultsController extends BaseController {
       return this.successResponse(
         {
           data: {
-            result: new_game_result,
+            continue: new_game_result,
+            links: {
+              continue_game: CONTINUE_GAME,
+            },
           },
-          message: 'Complete game',
+          message: 'Continue game',
         },
         res,
       );
@@ -115,64 +111,75 @@ export class GameResultsController extends BaseController {
     @Body() continueGameResultDto: ContinueGameResultDto,
     @Res() res: Response,
   ) {
-    const next_question = await this.gameResultService.continueGame(
-      continueGameResultDto,
+    const game = await this.gameService.getDetailGame(
+      continueGameResultDto.gameId,
     );
 
-    if (next_question) {
+    if (game.category === GameCategoryEnum.LOGICAL) {
+      const next_question = await this.gameResultService.continueLogicalGame(
+        continueGameResultDto,
+      );
+
+      if (next_question) {
+        return this.successResponse(
+          {
+            data: {
+              question: next_question,
+            },
+            message: 'Continue playing game',
+          },
+          res,
+        );
+      } else {
+        return this.errorsResponse(
+          {
+            message: 'Can not continue this game',
+          },
+          res,
+        );
+      }
+    } else {
+      const next_level = await this.memoryAnswerService.continueMemoryGame(
+        continueGameResultDto,
+      );
+
+      console.log('check next level::', next_level);
+
+      if (next_level) {
+        return this.successResponse(
+          {
+            data: {
+              question: next_level,
+            },
+            message: 'Continue playing game',
+          },
+          res,
+        );
+      } else {
+        return this.errorsResponse(
+          {
+            message: 'Can not continue this game',
+          },
+          res,
+        );
+      }
+    }
+  }
+
+  @Get('/export')
+  @UseGuards(JwtAuthGuard, new AuthorizationGuard([RoleEnum.ADMIN]))
+  async exportResults(@Res() res: Response) {
+    const results = await this.gameResultService.getAllResults();
+
+    if (results) {
       return this.successResponse(
         {
           data: {
-            question: next_question,
+            all_results: results,
           },
-          message: 'Continue playing game',
-        },
-        res,
-      );
-    } else {
-      return this.errorsResponse(
-        {
-          message: 'Update failed',
         },
         res,
       );
     }
   }
-
-  // @Post('/submit')
-  // @UseGuards(JwtAuthGuard, new AuthorizationGuard([RoleEnum.CANDIDATE]))
-  // async submitGameResult(@Res() res: Response) {
-  //   const game_result = await this.gameResultService.submitGameResult();
-
-  //   if (game_result) {
-  //     return this.successResponse(
-  //       {
-  //         data: {
-  //           game_result,
-  //           links: {},
-  //         },
-  //         message: 'submit success',
-  //       },
-  //       res,
-  //     );
-  //   }
-  // }
-
-  // @Get('admin/export')
-  // @UseGuards(JwtAuthGuard, new AuthorizationGuard([RoleEnum.ADMIN]))
-  // async exportResult(@Res() res: Response) {
-  //   const results = await this.usersService.getAllResults();
-
-  //   if (results) {
-  //     return this.successResponse(
-  //       {
-  //         data: {
-  //           assessments_and_candidates: results,
-  //           all_games: 'http//localhost:3000/api/v1/games',
-  //         },
-  //       },
-  //       res,
-  //     );
-  //   }
-  // }
 }

@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Users } from '@entities/users.entity';
 import { plainToClass } from 'class-transformer';
 import { UsersRepository } from '../../users/repositories/user.repository';
@@ -18,7 +18,6 @@ import {
 import { GameResults } from '@entities/games-results.entity';
 import { GameResultStatusEnum } from '@common/enum/game-result-status.enum';
 import { LogicalAnswersRepository } from '../repositories/logical-answer.repository';
-import { MemoryAnswersRepository } from '../repositories/memory-answer.repository';
 import { LogicalQuestionsRepository } from '@modules/logical-questions/repositories/logical-question.repository';
 import { GameCategoryEnum } from '@common/enum/game-category.enum';
 import { AnswerStatusEnum } from '@common/enum/answer-status.enum';
@@ -31,7 +30,6 @@ export class GameResultsService {
     private assessmentsRepository: AssessmentsRepository,
     private gamesRepository: GamesRepository,
     private logicalAnswerRepository: LogicalAnswersRepository,
-    private memoryAnswerRepository: MemoryAnswersRepository,
     private logicalQuestionRepository: LogicalQuestionsRepository,
     private readonly i18n: I18nService,
   ) {}
@@ -194,8 +192,9 @@ export class GameResultsService {
           1000;
       }
 
-      const current_question = existedGameResult.current_question_level + 1;
       if (time <= 300) {
+        console.log('hahaha::');
+        const current_question = existedGameResult.current_question_level + 1;
         console.log('check now current::', current_question);
         paramUpdate = plainToClass(GameResults, {
           status: GameResultStatusEnum.NOT_COMPLETED,
@@ -208,6 +207,7 @@ export class GameResultsService {
           score: check === 1 ? existedGameResult.score + 1 : existedGameResult,
         });
       } else if (time > 300 || existedGameResult.current_question_level > 20) {
+        console.log('check var::');
         paramUpdate = plainToClass(GameResults, {
           status: GameResultStatusEnum.COMPLETED,
           current_question_level: existedGameResult.current_question_level,
@@ -217,6 +217,7 @@ export class GameResultsService {
         });
       }
     } else {
+      console.log('hihihi::');
       const current_time = new Date();
       const complete_time = existedGameResult.complete_time;
       let time = existedGameResult.complete_time;
@@ -304,7 +305,7 @@ export class GameResultsService {
     // }
   }
 
-  async continueGame(params: ContinueGameResultInterface) {
+  async continueLogicalGame(params: ContinueGameResultInterface) {
     const game_result = await this.gameResultRepository.findOne({
       where: {
         assessmentId: params.assessmentId,
@@ -343,5 +344,9 @@ export class GameResultsService {
     await this.gameResultRepository.update(resultId, paramUpdate);
   }
 
-  // async submitGameResult() {}
+  async getAllResults() {
+    const all_results = await this.gameResultRepository.find({});
+
+    return all_results;
+  }
 }

@@ -306,4 +306,8 @@ export class AssessmentsService {
       throw new CustomizeException(this.i18n.t('message.USER_NOT_FOUND'));
     }
   }
+
+  async updateCandidateAssessment() {
+    return null;
+  }
 }

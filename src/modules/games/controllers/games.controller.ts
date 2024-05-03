@@ -6,8 +6,6 @@ import {
   Param,
   Post,
   Body,
-  Patch,
-  Put,
 } from '@nestjs/common';
 import { BaseController } from '@modules/app/base.controller';
 import { JwtAuthGuard } from '@guards/jwt-auth.guard';
