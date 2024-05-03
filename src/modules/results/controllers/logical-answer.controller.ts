@@ -58,21 +58,18 @@ export class LogicalAnswersController extends BaseController {
         check_answer = 3;
         check_result = false;
       }
-      console.log('check_answer::', check_answer);
 
       const game_result = await this.gameResultService.updateGameResult(
         resultId,
         check_answer,
       );
 
-      console.log('check current::', game_result.current_question_level);
-
       const next_question = await this.gameResultService.findNextQuestion(
         resultId,
       );
 
       if (
-        game_result.complete_time <= 300 &&
+        game_result.complete_time <= 90 &&
         game_result.status === GameResultStatusEnum.NOT_COMPLETED &&
         next_question
       ) {

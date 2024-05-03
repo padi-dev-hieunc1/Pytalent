@@ -74,7 +74,7 @@ export class LogicalAnswersService {
       throw new CustomizeException(this.i18n.t('message.LOGICAL_ANSWER_DONE'));
 
     if (
-      result.complete_time <= 300 &&
+      result.complete_time <= 90 &&
       result.status === GameResultStatusEnum.NOT_COMPLETED
     ) {
       if (question && logical_answer && !logical_answer.candidate_answer) {

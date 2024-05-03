@@ -117,7 +117,6 @@ export class GameResultsService {
 
       if (existedGameResult) {
         if (existedGameResult.status === GameResultStatusEnum.NOT_COMPLETED) {
-          console.log('hahahha');
           return existedGameResult;
         } else {
           // Game completed, catch error
@@ -192,32 +191,28 @@ export class GameResultsService {
           1000;
       }
 
-      if (time <= 300) {
-        console.log('hahaha::');
-        const current_question = existedGameResult.current_question_level + 1;
-        console.log('check now current::', current_question);
+      if (time <= 90) {
         paramUpdate = plainToClass(GameResults, {
           status: GameResultStatusEnum.NOT_COMPLETED,
-          current_question_level: current_question,
+          current_question_level: existedGameResult.current_question_level + 1,
           complete_question:
             check !== 3
               ? existedGameResult.complete_question + 1
               : existedGameResult.complete_question,
           complete_time: time,
-          score: check === 1 ? existedGameResult.score + 1 : existedGameResult,
+          score:
+            check === 1 ? existedGameResult.score + 1 : existedGameResult.score,
         });
-      } else if (time > 300 || existedGameResult.current_question_level > 20) {
-        console.log('check var::');
+      } else if (time > 90 || existedGameResult.current_question_level > 20) {
         paramUpdate = plainToClass(GameResults, {
           status: GameResultStatusEnum.COMPLETED,
           current_question_level: existedGameResult.current_question_level,
           complete_question: existedGameResult.complete_question,
-          complete_time: 300,
+          complete_time: 90,
           score: existedGameResult.score,
         });
       }
     } else {
-      console.log('hihihi::');
       const current_time = new Date();
       const complete_time = existedGameResult.complete_time;
       let time = existedGameResult.complete_time;

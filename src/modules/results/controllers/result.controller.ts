@@ -90,18 +90,68 @@ export class GameResultsController extends BaseController {
         );
       }
     } else {
-      return this.successResponse(
-        {
-          data: {
-            continue: new_game_result,
-            links: {
-              continue_game: CONTINUE_GAME,
+      if (game.category === GameCategoryEnum.LOGICAL) {
+        const logical_question =
+          await this.gameResultService.continueLogicalGame(createGameResultDto);
+
+        if (logical_question) {
+          return this.successResponse(
+            {
+              data: {
+                continue: new_game_result,
+                question: logical_question,
+                links: {
+                  continue_game: CONTINUE_GAME,
+                },
+              },
+              message: 'Continue logical game',
             },
-          },
-          message: 'Continue game',
-        },
-        res,
-      );
+            res,
+          );
+        } else {
+          return this.successResponse(
+            {
+              data: {
+                game_result: new_game_result,
+              },
+              message: 'End game',
+            },
+            res,
+          );
+        }
+      }
+
+      if (game.category === GameCategoryEnum.MEMORY) {
+        const memory_level = await this.memoryAnswerService.continueMemoryGame(
+          createGameResultDto,
+        );
+
+        if (memory_level) {
+          return this.successResponse(
+            {
+              data: {
+                continue: new_game_result,
+                question: memory_level,
+                links: {
+                  continue_game: CONTINUE_GAME,
+                },
+              },
+              message: 'Continue memory game',
+            },
+            res,
+          );
+        } else {
+          return this.successResponse(
+            {
+              data: {
+                game_result: new_game_result,
+              },
+              message: 'End game',
+            },
+            res,
+          );
+        }
+      }
     }
   }
 
@@ -142,8 +192,6 @@ export class GameResultsController extends BaseController {
       const next_level = await this.memoryAnswerService.continueMemoryGame(
         continueGameResultDto,
       );
-
-      console.log('check next level::', next_level);
 
       if (next_level) {
         return this.successResponse(

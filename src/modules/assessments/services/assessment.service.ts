@@ -17,6 +17,8 @@ import { CandidateAssessments } from '@entities/candidate-assessment';
 import { CandidateAssessmentsRepository } from '../repositories/candidate-assessment.repository';
 import { CreateUserInterface } from '@shared/interfaces/user.interface';
 import { AssessmentGamesService } from '@modules/assessment-games/services/assessment-game.service';
+import { GameResultsRepository } from '@modules/results/repositories/result.repository';
+import { GameResultStatusEnum } from '@common/enum/game-result-status.enum';
 
 @Injectable()
 export class AssessmentsService {
@@ -25,6 +27,7 @@ export class AssessmentsService {
     private usersRepository: UsersRepository,
     private candidateAssessmentsRepository: CandidateAssessmentsRepository,
     private assessmentGameService: AssessmentGamesService,
+    private readonly gameResultRepository: GameResultsRepository,
     private readonly i18n: I18nService,
   ) {}
 
@@ -307,7 +310,51 @@ export class AssessmentsService {
     }
   }
 
-  async updateCandidateAssessment() {
-    return null;
+  async updateCandidateAssessment(candidateId: number, assessmentId: number) {
+    const candidate_assessment =
+      await this.candidateAssessmentsRepository.findOne({
+        where: {
+          candidateId: candidateId,
+          assessmentId: assessmentId,
+        },
+      });
+
+    if (candidate_assessment) {
+      const game_results = await this.gameResultRepository.find({
+        where: {
+          candidateId: candidateId,
+          assessmentId: assessmentId,
+        },
+      });
+
+      let all_completed = true;
+
+      for (const game_result of game_results) {
+        if (game_result.status !== GameResultStatusEnum.COMPLETED) {
+          all_completed = false;
+          break;
+        }
+      }
+
+      const new_status = all_completed
+        ? CandidateAssessmentStatusEnum.COMPLETED
+        : CandidateAssessmentStatusEnum.PROCESSING;
+
+      const paramUpdate = plainToClass(CandidateAssessments, {
+        status: new_status,
+      });
+
+      const updated = await this.candidateAssessmentsRepository.update(
+        candidate_assessment.id,
+        paramUpdate,
+      );
+
+      if (updated.affected === 1) return paramUpdate;
+      else return null;
+    } else {
+      throw new CustomizeException(
+        this.i18n.t('message.CANDIDATE_ASSESSMENT_NOT_FOUND'),
+      );
+    }
   }
 }

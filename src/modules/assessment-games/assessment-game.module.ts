@@ -10,6 +10,7 @@ import { AssessmentsService } from '@modules/assessments/services/assessment.ser
 import { UsersRepository } from '@modules/users/repositories/user.repository';
 import { CandidateAssessmentsRepository } from '@modules/assessments/repositories/candidate-assessment.repository';
 import { HrGamesRepository } from '@modules/hr-games/repositories/hr-game.repository';
+import { GameResultsRepository } from '@modules/results/repositories/result.repository';
 
 @Module({
   imports: [TypeOrmModule.forFeature([AssessmentGamesEntity])],
@@ -22,6 +23,7 @@ import { HrGamesRepository } from '@modules/hr-games/repositories/hr-game.reposi
     UsersRepository,
     HrGamesRepository,
     AssessmentsRepository,
+    GameResultsRepository,
     CandidateAssessmentsRepository,
   ],
   exports: [AssessmentGamesService, AssessmentGamesRepository],

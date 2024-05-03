@@ -11,6 +11,7 @@ import { AssessmentGamesRepository } from '@modules/assessment-games/repositorie
 import { GamesRepository } from '@modules/games/repositories/games.repository';
 import { HrGamesRepository } from '@modules/hr-games/repositories/hr-game.repository';
 import { MailService } from '@modules/mail/mail.service';
+import { GameResultsRepository } from '@modules/results/repositories/result.repository';
 // import { MailService } from '@modules/mail/mail.service';
 
 @Module({
@@ -25,6 +26,7 @@ import { MailService } from '@modules/mail/mail.service';
     HrGamesRepository,
     CandidateAssessmentsRepository,
     AssessmentGamesRepository,
+    GameResultsRepository,
     MailService,
   ],
   exports: [

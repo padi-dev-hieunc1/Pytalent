@@ -27,6 +27,8 @@ import {
   INVITE_CANDIDATE,
   UPDATE_PASSWORD,
 } from '@shared/constant/constants';
+import { CandidateAssessmentStatusEnum } from '@common/enum/candidate-assessment-status.enum';
+import { CustomizeException } from '@exception/customize.exception';
 
 @Controller('api/v1/assessments')
 export class AssessmentsController extends BaseController {
@@ -240,26 +242,52 @@ export class AssessmentsController extends BaseController {
     }
   }
 
-  // @Patch('update/:assessmentId')
-  // @UseGuards(JwtAuthGuard, new AuthorizationGuard([RoleEnum.HR]))
-  // async updateAssessment(
-  //   @Param('assessmentId') assessmentId: number,
-  //   @Res() res: Response,
-  // ) {
-  //   const updated_assessment = await this.assessmentService.updateAssessment(
-  //     assessmentId,
-  //   );
+  @Patch('/update-confirm/:candidateId/:assessmentId')
+  @UseGuards(
+    JwtAuthGuard,
+    new AuthorizationGuard([RoleEnum.HR, RoleEnum.CANDIDATE]),
+  )
+  async updateCandidateAssessment(
+    @Param('candidateId') candidateId: number,
+    @Param('assessmentId') assessmentId: number,
+    @Res() res: Response,
+  ) {
+    const update_confirm =
+      await this.assessmentService.updateCandidateAssessment(
+        candidateId,
+        assessmentId,
+      );
 
-  //   if (updated_assessment.affected) {
-  //     return this.successResponse(
-  //       {
-  //         data: {},
-  //         message: 'update success',
-  //       },
-  //       res,
-  //     );
-  //   } else {
-  //     throw new CustomizeException(this.i18n.t('message.ASSESSMENT_NOT_FOUND'));
-  //   }
-  // }
+    const confirm = update_confirm.status;
+
+    if (confirm === CandidateAssessmentStatusEnum.COMPLETED) {
+      return this.successResponse(
+        {
+          data: {
+            confirm: confirm,
+          },
+          message: 'Completed assessment',
+        },
+        res,
+      );
+    } else if (confirm === CandidateAssessmentStatusEnum.PROCESSING) {
+      return this.successResponse(
+        {
+          data: {
+            confirm: confirm,
+          },
+          message: 'Process assessment',
+        },
+        res,
+      );
+    } else {
+      return this.errorsResponse(
+        {
+          data: {},
+          message: 'Update failed',
+        },
+        res,
+      );
+    }
+  }
 }

@@ -81,6 +81,7 @@ export class MemoryAnswersController extends BaseController {
         return this.successResponse(
           {
             data: {
+              check: true,
               question: next_memory_question,
             },
             message: 'Complete previous level',
@@ -92,7 +93,14 @@ export class MemoryAnswersController extends BaseController {
       return this.successResponse(
         {
           data: {
-            question: memory_answer,
+            check: true,
+            question: {
+              id: memory_answer.id,
+              level: memory_answer.level,
+              status: memory_answer.status,
+              candidate_answer: memory_answer.candidate_answer,
+              resultId: memory_answer.resultId,
+            },
           },
           message: 'Continue this level',
         },

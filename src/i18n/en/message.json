@@ -24,5 +24,6 @@
   "RESULT_NOT_FOUND": "Candidate have never played games in this assessment",
   "LOGICAL_ANSWER_NOT_FOUND": "Can not find this logical answer",
   "LOGICAL_ANSWER_DONE": "This logical answer had been answered",
-  "MEMORY_ANSWER_NOT_FOUND": "Can not find this memory answer"
+  "MEMORY_ANSWER_NOT_FOUND": "Can not find this memory answer",
+  "CANDIDATE_ASSESSMENT_NOT_FOUND": "This candidate is not invited to this assessment"
 }
