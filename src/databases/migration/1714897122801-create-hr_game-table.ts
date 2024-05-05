@@ -5,8 +5,8 @@ import {
   TableForeignKey,
 } from 'typeorm';
 
-export class CreateHrGameTable1711527845297 implements MigrationInterface {
-  name = 'CreateHrGameTable1711527845297';
+export class CreateHrGameTable1714897122801 implements MigrationInterface {
+  name = 'CreateHrGameTable1714897122801';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.createTable(

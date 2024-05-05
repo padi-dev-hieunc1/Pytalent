@@ -6,15 +6,15 @@ import {
   TableForeignKey,
 } from 'typeorm';
 
-export class CreateMemoryAnswerTable1713451964977
+export class CreateLogicalAnswerTable1714897609832
   implements MigrationInterface
 {
-  name = 'CreateMemoryAnswerTable1713451964977';
+  name = 'CreateLogicalAnswerTable1714897609832';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.createTable(
       new Table({
-        name: 'memory_answers',
+        name: 'logical_answers',
         columns: [
           {
             name: 'id',
@@ -22,24 +22,6 @@ export class CreateMemoryAnswerTable1713451964977
             isPrimary: true,
             isGenerated: true,
             generationStrategy: 'increment',
-          },
-          {
-            name: 'level',
-            type: 'integer',
-          },
-          {
-            name: 'title',
-            type: 'varchar(255)',
-          },
-          {
-            name: 'time_limit',
-            type: 'integer',
-          },
-          {
-            name: 'status',
-            type: 'enum',
-            enum: Object.values(AnswerStatusEnum),
-            default: `'${AnswerStatusEnum.SKIP}'`,
           },
           {
             name: 'candidate_answer',
@@ -51,7 +33,16 @@ export class CreateMemoryAnswerTable1713451964977
             type: 'integer',
           },
           {
+            name: 'status',
+            type: 'enum',
+            enum: Object.values(AnswerStatusEnum),
+          },
+          {
             name: 'resultId',
+            type: 'integer',
+          },
+          {
+            name: 'questionId',
             type: 'integer',
           },
           {
@@ -66,9 +57,16 @@ export class CreateMemoryAnswerTable1713451964977
         foreignKeys: [
           new TableForeignKey({
             columnNames: ['resultId'],
-            name: 'fk_memory_answer-game_result',
+            name: 'fk_logical_answer-game_result',
             referencedColumnNames: ['id'],
             referencedTableName: 'game_results',
+            onDelete: 'CASCADE',
+          }),
+          new TableForeignKey({
+            columnNames: ['questionId'],
+            name: 'fk_logical_answer-logical_question',
+            referencedColumnNames: ['id'],
+            referencedTableName: 'logical_questions',
             onDelete: 'CASCADE',
           }),
         ],
@@ -77,6 +75,6 @@ export class CreateMemoryAnswerTable1713451964977
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.dropTable('memory_answers');
+    await queryRunner.dropTable('logical_answers');
   }
 }

@@ -12,8 +12,9 @@
     "start": "nest start",
     "seed:config": "ts-node ./node_modules/typeorm-seeding/dist/cli.js config -n ./src/databases/config/orm.config.seed.ts",
     "db:drop": "rm src/databases/storage/*.sqlite3",
+    "db:drop:mysql": "typeorm schema:drop",
     "db:seed": "ts-node ./node_modules/typeorm-seeding/dist/cli.js seed -n ./src/databases/config/orm.config.seed.ts",
-    "db:refresh": "npm run db:drop; npm run typeorm migration:run; npm run db:seed;",
+    "db:refresh": "npm run db:drop:mysql; npm run typeorm migration:run; npm run db:seed;",
     "db:refresh:mariadb": "export NODE_ENV=mariadb; npm run db:drop; npm run typeorm migration:run; npm run db:seed;",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
@@ -74,6 +75,7 @@
     "winston-daily-rotate-file": "^4.7.1"
   },
   "devDependencies": {
+    "@faker-js/faker": "^8.4.1",
     "@nestjs/cli": "^9.0.0",
     "@nestjs/schematics": "^9.0.0",
     "@nestjs/testing": "^9.0.0",
