@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Post, Res, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '@guards/jwt-auth.guard';
 import { Response } from 'express';
 import { BaseController } from '@modules/app/base.controller';
@@ -81,7 +90,7 @@ export class GameResultsController extends BaseController {
           {
             data: {
               question: first_random_memory_question.title,
-              time_limit: first_random_memory_question.level,
+              time_limit: first_random_memory_question.time_limit,
               resultId: new_game_result.id,
             },
             message: 'Start playing game',
@@ -100,9 +109,6 @@ export class GameResultsController extends BaseController {
               data: {
                 continue: new_game_result,
                 question: logical_question,
-                links: {
-                  continue_game: CONTINUE_GAME,
-                },
               },
               message: 'Continue logical game',
             },
@@ -132,9 +138,6 @@ export class GameResultsController extends BaseController {
               data: {
                 continue: new_game_result,
                 question: memory_level,
-                links: {
-                  continue_game: CONTINUE_GAME,
-                },
               },
               message: 'Continue memory game',
             },
@@ -224,6 +227,26 @@ export class GameResultsController extends BaseController {
         {
           data: {
             all_results: results,
+          },
+        },
+        res,
+      );
+    }
+  }
+
+  @Patch('/complete/:resultId')
+  @UseGuards(JwtAuthGuard, new AuthorizationGuard([RoleEnum.CANDIDATE]))
+  async completeGame(
+    @Param('resultId') resultId: number,
+    @Res() res: Response,
+  ) {
+    const result = await this.gameResultService.completeGame(resultId);
+
+    if (result) {
+      return this.successResponse(
+        {
+          data: {
+            game_result: result,
           },
         },
         res,

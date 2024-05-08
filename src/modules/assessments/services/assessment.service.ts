@@ -275,7 +275,7 @@ export class AssessmentsService {
       },
     });
 
-    if (assessment) {
+    if (assessment && assessment.end_time) {
       const currentTime = new Date();
       const endTime = assessment.end_time;
 

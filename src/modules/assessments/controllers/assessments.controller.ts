@@ -88,7 +88,9 @@ export class AssessmentsController extends BaseController {
       // or set assessment's status to expired -> set status -> still get all assessment include expired assessment
 
       for (const assessment of assessments) {
-        await this.assessmentService.updateStatusAssessment(assessment.id);
+        if (assessment && assessment.end_time) {
+          await this.assessmentService.updateStatusAssessment(assessment.id);
+        }
       }
 
       const updated_assessments =

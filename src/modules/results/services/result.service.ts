@@ -344,4 +344,29 @@ export class GameResultsService {
 
     return all_results;
   }
+
+  async completeGame(resultId: number) {
+    const result = await this.getDetailGameResult(resultId);
+
+    if (result) {
+      const paramUpdate = plainToClass(GameResults, {
+        status: GameResultStatusEnum.COMPLETED,
+        complete_time: 90,
+        current_question_level: result.current_question_level,
+        complete_question: result.complete_question,
+        score: result.score,
+      });
+
+      const updated_game_result = await this.gameResultRepository.update(
+        resultId,
+        paramUpdate,
+      );
+
+      if (updated_game_result.affected === 1) {
+        return paramUpdate;
+      } else {
+        return null;
+      }
+    }
+  }
 }
