@@ -43,6 +43,7 @@ export default class CreateLogicalQuestions implements Seeder {
         second_statement: secondStatement,
         conclusion: conclusion,
         result: result,
+        score: 1,
         created_at: new Date(
           new Date().setDate(firstThisWeek - 7),
         ).toISOString(),
@@ -68,6 +69,7 @@ export default class CreateLogicalQuestions implements Seeder {
         second_statement: secondStatement,
         conclusion: conclusion,
         result: result,
+        score: 1,
         created_at: new Date(
           new Date().setDate(firstThisWeek - 7),
         ).toISOString(),

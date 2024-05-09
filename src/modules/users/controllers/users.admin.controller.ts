@@ -35,7 +35,11 @@ export class UsersAdminController extends BaseController {
     return this.successResponse(
       {
         data: {
-          new_hr,
+          new_hr: {
+            email: new_hr.email,
+            username: new_hr.username,
+            role: new_hr.role,
+          },
           links: {
             create_hr: CREATE_HR,
             list_hrs: LIST_HRS,

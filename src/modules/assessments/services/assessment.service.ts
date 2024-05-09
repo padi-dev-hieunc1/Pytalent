@@ -43,6 +43,18 @@ export class AssessmentsService {
     else return false;
   }
 
+  async checkExistedCandidate(candidateId: number) {
+    const candidate: Users = await this.usersRepository.findOne({
+      where: {
+        id: candidateId,
+        role: RoleEnum.CANDIDATE,
+      },
+    });
+
+    if (candidate) return true;
+    else return false;
+  }
+
   async createAssessment(params: CreateAssessmentInterface) {
     let assessment: CreateAssessmentInterface;
 
@@ -113,6 +125,26 @@ export class AssessmentsService {
       else return null;
     } else {
       throw new CustomizeException(this.i18n.t('message.HR_NOT_FOUND'));
+    }
+  }
+
+  async getAllAssessmentsByCandidateId(candidateId: number) {
+    const existed_candidate = await this.checkExistedCandidate(candidateId);
+
+    if (existed_candidate) {
+      const list_candidate_assessments: CandidateAssessments[] =
+        await this.candidateAssessmentsRepository.findAssessmentsByCandidateId(
+          candidateId,
+        );
+
+      if (list_candidate_assessments) {
+        const list_assessments = list_candidate_assessments.map(
+          (list_assessment) => list_assessment.assessment,
+        );
+        return list_assessments;
+      } else return null;
+    } else {
+      throw new CustomizeException(this.i18n.t('message.CANDIDATE_NOT_FOUND'));
     }
   }
 

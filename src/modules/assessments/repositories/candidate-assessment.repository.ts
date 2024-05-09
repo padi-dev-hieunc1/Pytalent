@@ -13,4 +13,13 @@ export class CandidateAssessmentsRepository extends Repository<CandidateAssessme
       relations: ['candidate', 'assessment'],
     });
   }
+
+  async findAssessmentsByCandidateId(candidateId: number): Promise<any> {
+    return await this.find({
+      where: {
+        candidateId: candidateId,
+      },
+      relations: ['assessment'],
+    });
+  }
 }

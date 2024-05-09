@@ -21,6 +21,9 @@ export class LogicalQuestions extends BaseEntity {
   @Column()
   conclusion: string;
 
+  @Column()
+  score: number;
+
   @Column({
     name: 'result',
     type: 'enum',

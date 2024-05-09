@@ -7,6 +7,7 @@ import {
   Get,
   Param,
   Delete,
+  Patch,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '@guards/jwt-auth.guard';
 import { Response } from 'express';
@@ -21,6 +22,7 @@ import {
   GET_DETAIL_LOGICAL_QUESTION,
   RANDOM_LOGICAL_QUESTIONS,
 } from '@shared/constant/constants';
+import { UpdateLogicalQuestionScoreDto } from '../dto/update-logical-question-score.dto';
 
 @Controller('api/v1/logical-questions')
 export class LogicalQuestionsController extends BaseController {
@@ -152,6 +154,37 @@ export class LogicalQuestionsController extends BaseController {
             },
           },
           message: 'delete success',
+        },
+        res,
+      );
+    }
+  }
+
+  @Patch('/update/:questionId')
+  @UseGuards(JwtAuthGuard, new AuthorizationGuard([RoleEnum.ADMIN]))
+  async updateLogicalQuestionScore(
+    @Param('questionId') questionId: number,
+    @Body() updateLogicalQuestionScore: UpdateLogicalQuestionScoreDto,
+    @Res() res: Response,
+  ) {
+    const updated_question =
+      await this.logicalQuestionService.updateLogicalQuestionScore(
+        questionId,
+        updateLogicalQuestionScore,
+      );
+
+    if (updated_question.affected) {
+      return this.successResponse(
+        {
+          data: {
+            links: {
+              create_logical_question: CREATE_LOGICAL_QUESTION,
+              delete_logical_question: DELETE_LOGICAL_QUESTION,
+              get_detail_logical_question: GET_DETAIL_LOGICAL_QUESTION,
+              random_logical_questions: RANDOM_LOGICAL_QUESTIONS,
+            },
+          },
+          message: 'update success',
         },
         res,
       );

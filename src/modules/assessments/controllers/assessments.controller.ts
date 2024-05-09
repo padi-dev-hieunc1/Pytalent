@@ -28,7 +28,6 @@ import {
   UPDATE_PASSWORD,
 } from '@shared/constant/constants';
 import { CandidateAssessmentStatusEnum } from '@common/enum/candidate-assessment-status.enum';
-import { CustomizeException } from '@exception/customize.exception';
 
 @Controller('api/v1/assessments')
 export class AssessmentsController extends BaseController {
@@ -117,6 +116,35 @@ export class AssessmentsController extends BaseController {
       return this.errorsResponse(
         {
           message: 'Hr has not created any assessments before',
+        },
+        res,
+      );
+    }
+  }
+
+  @Get('/candidate/:candidateId')
+  @UseGuards(JwtAuthGuard, new AuthorizationGuard([RoleEnum.CANDIDATE]))
+  async getAllAssessmentsByCandidateId(
+    @Param('candidateId') candidateId: number,
+    @Res() res: Response,
+  ) {
+    const assessments =
+      await this.assessmentService.getAllAssessmentsByCandidateId(candidateId);
+
+    if (assessments.length > 0) {
+      return this.successResponse(
+        {
+          data: {
+            assessments: assessments,
+          },
+          message: 'success',
+        },
+        res,
+      );
+    } else {
+      return this.errorsResponse(
+        {
+          message: 'This user has not been invited to any assessments.',
         },
         res,
       );

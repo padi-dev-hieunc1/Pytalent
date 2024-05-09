@@ -40,6 +40,10 @@ export class CreateLogicalQuestionTable1711963424819
             enum: Object.values(LogicalResultEnum),
           },
           {
+            name: 'score',
+            type: 'integer',
+          },
+          {
             name: 'created_at',
             type: 'datetime',
           },
