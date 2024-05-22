@@ -47,6 +47,11 @@ export class CreateAssessmentTable1711527737449 implements MigrationInterface {
             isNullable: true,
           },
           {
+            name: 'archive',
+            type: 'integer',
+            default: 0,
+          },
+          {
             name: 'hrId',
             type: 'integer',
           },

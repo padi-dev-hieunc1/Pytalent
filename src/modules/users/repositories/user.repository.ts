@@ -21,6 +21,7 @@ export class UsersRepository extends Repository<UsersEntity> {
       where: {
         role: RoleEnum.HR,
       },
+      select: ['id', 'email', 'username', 'role'],
     });
   }
 

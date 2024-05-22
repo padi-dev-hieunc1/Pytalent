@@ -240,7 +240,9 @@ export class GameResultsController extends BaseController {
     @Param('resultId') resultId: number,
     @Res() res: Response,
   ) {
+    console.log('complete check::');
     const result = await this.gameResultService.completeGame(resultId);
+    console.log('check result::', result);
 
     if (result) {
       return this.successResponse(

@@ -39,6 +39,9 @@ export class Assessments extends BaseEntity {
   max_score: number;
 
   @Column()
+  archive: number;
+
+  @Column()
   hrId: number;
 
   @ManyToOne(() => Users, (hr) => hr.assessment)

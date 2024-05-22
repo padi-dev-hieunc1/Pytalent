@@ -64,8 +64,14 @@ export class GameResultsService {
       },
     });
 
-    if (assessment) return true;
-    else return false;
+    if (assessment) {
+      if (assessment.archive === 1) {
+        throw new CustomizeException(
+          this.i18n.t('message.ASSESSMENT_ARCHIVED'),
+        );
+      }
+      return true;
+    } else return false;
   }
 
   async getDetailGameResult(resultId: number) {
@@ -81,6 +87,7 @@ export class GameResultsService {
         'score',
         'status',
       ],
+      relations: ['assessment'],
     });
 
     if (game_result) return game_result;

@@ -20,6 +20,14 @@ export class MemoryAnswersService {
     private readonly i18n: I18nService,
   ) {}
   async createMemoryAnswer(resultId: number, level: number) {
+    const game_result = await this.gameResultService.getDetailGameResult(
+      resultId,
+    );
+
+    if (game_result.assessment.archive === 1) {
+      throw new CustomizeException(this.i18n.t('message.ASSESSMENT_ARCHIVED'));
+    }
+
     const memory_answer = await this.getDetailMemoryAnswer(resultId, level);
 
     if (!memory_answer) {

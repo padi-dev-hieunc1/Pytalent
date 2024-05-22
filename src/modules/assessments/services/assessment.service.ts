@@ -109,8 +109,14 @@ export class AssessmentsService {
       },
     });
 
-    if (assessment) return assessment;
-    else
+    if (assessment) {
+      if (assessment?.archive === 1) {
+        throw new CustomizeException(
+          this.i18n.t('message.ASSESSMENT_ARCHIVED'),
+        );
+      }
+      return assessment;
+    } else
       throw new CustomizeException(this.i18n.t('message.ASSESSMENT_NOT_FOUND'));
   }
 
@@ -170,6 +176,10 @@ export class AssessmentsService {
         id: params.assessmentId,
       },
     });
+
+    if (assessment.archive === 1) {
+      throw new CustomizeException(this.i18n.t('message.ASSESSMENT_ARCHIVED'));
+    }
 
     if (assessment.status === AssessmentStatusEnum.EXPIRED) {
       throw new CustomizeException(this.i18n.t('message.ASSESSMENT_EXPIRED'));
@@ -387,6 +397,32 @@ export class AssessmentsService {
       throw new CustomizeException(
         this.i18n.t('message.CANDIDATE_ASSESSMENT_NOT_FOUND'),
       );
+    }
+  }
+
+  async archiveAssessment(assessmentId: number) {
+    const assessment = await this.assessmentsRepository.findOne({
+      where: {
+        id: assessmentId,
+      },
+    });
+
+    const archive = assessment.archive === 0 ? 1 : 0;
+
+    if (assessment) {
+      const paramUpdate = plainToClass(Assessments, {
+        archive: archive,
+      });
+
+      const updated = await this.assessmentsRepository.update(
+        assessmentId,
+        paramUpdate,
+      );
+
+      if (updated.affected === 1) return paramUpdate;
+      else return null;
+    } else {
+      throw new CustomizeException(this.i18n.t('message.ASSESSMENT_NOT_FOUND'));
     }
   }
 }

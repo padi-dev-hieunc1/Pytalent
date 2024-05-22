@@ -5,7 +5,6 @@ import { LogicalQuestionsRepository } from '../repositories/logical-question.rep
 import { CreateLogicalQuestionInterface } from '@shared/interfaces/logical-question.interface';
 import { LogicalQuestions } from '@entities/logical-questions.entity';
 import { CustomizeException } from '@exception/customize.exception';
-import e from 'connect-flash';
 import { UpdateLogicalQuestionScoreDto } from '../dto/update-logical-question-score.dto';
 
 @Injectable()
@@ -23,6 +22,7 @@ export class LogicalQuestionsService {
         first_statement: params.first_statement,
         second_statement: params.second_statement,
         conclusion: params.conclusion,
+        score: params.score,
         result: params.result,
       },
     );

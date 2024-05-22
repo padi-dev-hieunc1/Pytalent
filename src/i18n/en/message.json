@@ -21,6 +21,7 @@
   "ASSESSMENT_EXPIRED": "This assessment has been expired",
   "INVALID_END_TIME": "Invalid end time",
   "ASSESSMENT_NOT_START": "It is not time to start this assessment",
+  "ASSESSMENT_ARCHIVED": "Assessment has been archived.",
   "RESULT_NOT_FOUND": "Candidate have never played games in this assessment",
   "LOGICAL_ANSWER_NOT_FOUND": "Can not find this logical answer",
   "LOGICAL_ANSWER_DONE": "This logical answer had been answered",

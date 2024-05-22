@@ -37,7 +37,8 @@
       "@enum/*": ["common/enum/*"],
       "@exception/*": ["exception/*"],
       "@shared/*": ["shared/*"],
-      "@logs/*": ["logs/*"]
+      "@logs/*": ["logs/*"],
+      // "@task/*": ["task/*"]
     }
   },
   "include": ["src", "src/**/*.ts", "test"],

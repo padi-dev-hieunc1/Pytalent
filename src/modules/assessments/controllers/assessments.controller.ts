@@ -320,4 +320,49 @@ export class AssessmentsController extends BaseController {
       );
     }
   }
+
+  @Patch('/archive/:assessmentId')
+  @UseGuards(JwtAuthGuard, new AuthorizationGuard([RoleEnum.HR]))
+  async archiveAssessment(
+    @Param('assessmentId') assessmentId: number,
+    @Res() res: Response,
+  ) {
+    const archived_assessment = await this.assessmentService.archiveAssessment(
+      assessmentId,
+    );
+
+    console.log('check archive_assess::', archived_assessment);
+
+    const archive = archived_assessment.archive;
+
+    if (archive === 1) {
+      return this.successResponse(
+        {
+          data: {
+            archive: true,
+          },
+          message: 'Archive assessment success',
+        },
+        res,
+      );
+    } else if (archive === 0) {
+      return this.successResponse(
+        {
+          data: {
+            archive: true,
+          },
+          message: 'Unarchive assessment success',
+        },
+        res,
+      );
+    } else {
+      return this.errorsResponse(
+        {
+          data: {},
+          message: 'Archive failed',
+        },
+        res,
+      );
+    }
+  }
 }

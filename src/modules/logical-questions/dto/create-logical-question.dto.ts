@@ -15,6 +15,9 @@ export class CreateLogicalQuestionDto {
   conclusion: string;
 
   @IsNotEmpty()
+  score: number;
+
+  @IsNotEmpty()
   @IsEnum(LogicalResultEnum)
   result: LogicalResultEnum;
 }

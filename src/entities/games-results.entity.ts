@@ -39,6 +39,9 @@ export class GameResults extends BaseEntity {
   @Column()
   current_question_level: number;
 
+  // @Column()
+  // is_playing: number;
+
   @Column()
   assessmentId: number;
 

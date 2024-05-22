@@ -5,5 +5,6 @@ export interface CreateLogicalQuestionInterface {
   first_statement: string;
   second_statement: string;
   conclusion: string;
+  score: number;
   result: LogicalResultEnum;
 }
