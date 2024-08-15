@@ -156,21 +156,18 @@ export class GameResultsService {
             },
           );
 
-          const game_result = await this.gameResultRepository.save(paramCreate);
+          const gameResult = await this.gameResultRepository.save(paramCreate);
 
-          return game_result;
+          return gameResult;
         }
       }
     }
   }
 
   async updateGameResult(resultId: number, check: number) {
-    const existedGameResult: GameResults =
-      await this.gameResultRepository.findOne({
-        where: {
-          id: resultId,
-        },
-      });
+    const existedGameResult: GameResults = await this.getExistedGameResult(
+      resultId,
+    );
 
     const game = await this.gamesRepository.findOne({
       where: {
@@ -178,28 +175,57 @@ export class GameResultsService {
       },
     });
 
-    if (!existedGameResult)
-      throw new CustomizeException(this.i18n.t('message.RESULT_NOT_FOUND'));
+    const completeTime = existedGameResult.complete_time;
+    const createdAt = existedGameResult.created_at;
+    const updatedAt = existedGameResult.updated_at;
 
-    let paramUpdate: UpdateGameResultInterface;
-    if (game.category === GameCategoryEnum.LOGICAL) {
-      const current_time = new Date();
-      const complete_time = existedGameResult.complete_time;
+    const time = this.checkTimePlaying(completeTime, createdAt, updatedAt);
 
-      let time = existedGameResult.complete_time;
+    // const currentTime = new Date();
+    // let time: number = existedGameResult.complete_time;
 
-      if (complete_time === 0) {
-        time =
-          (current_time.getTime() - existedGameResult.created_at.getTime()) /
-          1000;
-      } else {
-        time +=
-          (current_time.getTime() - existedGameResult.updated_at.getTime()) /
-          1000;
-      }
+    // if (completeTime === 0) {
+    //   time = (currentTime.getTime() - createdAt.getTime()) / 1000;
+    // }
 
-      if (time <= 90) {
-        paramUpdate = plainToClass(GameResults, {
+    // if (completeTime !== 0) {
+    //   time += (currentTime.getTime() - updatedAt.getTime()) / 1000;
+    // }
+
+    const isLogicalGame = game.category === GameCategoryEnum.LOGICAL;
+
+    const paramUpdate: UpdateGameResultInterface = isLogicalGame
+      ? this.updateLogicalGameResult(existedGameResult, check, time)
+      : this.updateMemoryGameResult(existedGameResult, time);
+
+    const updatedGameResult = await this.gameResultRepository
+      .createQueryBuilder('game_result')
+      .update(GameResults)
+      .set(paramUpdate)
+      .where('id = :id', { id: resultId })
+      .execute();
+
+    if (updatedGameResult?.affected === 1) return paramUpdate;
+  }
+
+  private updateLogicalGameResult(
+    existedGameResult: GameResults,
+    check: number,
+    time: number,
+  ): UpdateGameResultInterface {
+    const isCompleted =
+      time > 90 || existedGameResult.current_question_level > 20;
+
+    return isCompleted
+      ? plainToClass(GameResults, {
+          status: GameResultStatusEnum.COMPLETED,
+          current_question_level: existedGameResult.current_question_level,
+          complete_question: existedGameResult.complete_question,
+          complete_time: 90,
+          score: existedGameResult.score,
+          updated_at: Date.now(),
+        })
+      : plainToClass(GameResults, {
           status: GameResultStatusEnum.NOT_COMPLETED,
           current_question_level: existedGameResult.current_question_level + 1,
           complete_question:
@@ -209,74 +235,82 @@ export class GameResultsService {
           complete_time: time,
           score:
             check === 1 ? existedGameResult.score + 1 : existedGameResult.score,
+          updated_at: Date.now(),
         });
-      } else if (time > 90 || existedGameResult.current_question_level > 20) {
-        paramUpdate = plainToClass(GameResults, {
-          status: GameResultStatusEnum.COMPLETED,
-          current_question_level: existedGameResult.current_question_level,
-          complete_question: existedGameResult.complete_question,
-          complete_time: 90,
-          score: existedGameResult.score,
-        });
-      }
-    } else {
-      const current_time = new Date();
-      const complete_time = existedGameResult.complete_time;
-      let time = existedGameResult.complete_time;
-      if (complete_time === 0) {
-        time =
-          (current_time.getTime() - existedGameResult.created_at.getTime()) /
-          1000;
-      } else {
-        time +=
-          (current_time.getTime() - existedGameResult.updated_at.getTime()) /
-          1000;
-      }
+  }
 
-      paramUpdate = plainToClass(GameResults, {
-        status: GameResultStatusEnum.NOT_COMPLETED,
-        current_question_level: existedGameResult.current_question_level + 1,
-        complete_question: existedGameResult.current_question_level,
-        complete_time: time,
-        score: existedGameResult.score + 1,
+  private updateMemoryGameResult(
+    existedGameResult: GameResults,
+    time: number,
+  ): UpdateGameResultInterface {
+    return plainToClass(GameResults, {
+      status: GameResultStatusEnum.NOT_COMPLETED,
+      current_question_level: existedGameResult.current_question_level + 1,
+      complete_question: existedGameResult.current_question_level,
+      complete_time: time,
+      score: existedGameResult.score + 1,
+      updated_at: Date.now(),
+    });
+  }
+
+  private async getExistedGameResult(resultId: number) {
+    const existedGameResult: GameResults =
+      await this.gameResultRepository.findOne({
+        where: {
+          id: resultId,
+        },
       });
+
+    if (!existedGameResult)
+      throw new CustomizeException(this.i18n.t('message.RESULT_NOT_FOUND'));
+
+    return existedGameResult;
+  }
+
+  private checkTimePlaying(
+    completeTime: number,
+    createdAt: Date,
+    updatedAt: Date,
+  ) {
+    const currentTime = new Date();
+    let time: number = completeTime;
+
+    if (completeTime === 0) {
+      time = (currentTime.getTime() - createdAt.getTime()) / 1000;
     }
 
-    const updated_game_result = await this.gameResultRepository
-      .createQueryBuilder('game_result')
-      .update(GameResults)
-      .set(paramUpdate)
-      .where('id = :id', { id: resultId })
-      .execute();
+    if (completeTime !== 0) {
+      time += (currentTime.getTime() - updatedAt.getTime()) / 1000;
+    }
 
-    if (updated_game_result?.affected === 1) return paramUpdate;
+    return time;
   }
 
   async findNextQuestion(resultId: number) {
-    const game_result = await this.getDetailGameResult(resultId);
+    // const game_result = await this.getDetailGameResult(resultId);
 
-    if (game_result) {
-      const next_logical_answer = await this.logicalAnswerRepository
-        .createQueryBuilder('logical_answer')
-        .where('logical_answer.resultId = :resultId', { resultId })
-        .andWhere('logical_answer.status = :status', {
-          status: AnswerStatusEnum.NOT_DONE,
-        })
-        .orderBy('logical_answer.id', 'ASC')
-        .getOne();
+    // if (game_result) {
+    const nextLogicalAnswer = await this.logicalAnswerRepository
+      .createQueryBuilder('logical_answer')
+      .where('logical_answer.resultId = :resultId', { resultId })
+      .andWhere('logical_answer.status = :status', {
+        status: AnswerStatusEnum.NOT_DONE,
+      })
+      .orderBy('logical_answer.id', 'ASC')
+      .getOne();
 
-      if (next_logical_answer) {
-        const next_question = await this.logicalQuestionRepository.findOne({
-          where: {
-            id: next_logical_answer.questionId,
-          },
-          select: ['id', 'first_statement', 'second_statement', 'conclusion'],
-        });
-        return next_question;
-      } else {
-        return null;
-      }
+    if (nextLogicalAnswer) {
+      const nextQuestion = await this.logicalQuestionRepository.findOne({
+        where: {
+          id: nextLogicalAnswer.questionId,
+        },
+        select: ['id', 'first_statement', 'second_statement', 'conclusion'],
+      });
+      return nextQuestion;
     }
+
+    return null;
+    // }
 
     // if (game_result) {
     //   const first_logical_answer = await this.logicalAnswerRepository

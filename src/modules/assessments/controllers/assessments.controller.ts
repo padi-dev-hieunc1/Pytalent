@@ -331,8 +331,6 @@ export class AssessmentsController extends BaseController {
       assessmentId,
     );
 
-    console.log('check archive_assess::', archived_assessment);
-
     const archive = archived_assessment.archive;
 
     if (archive === 1) {

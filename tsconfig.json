@@ -38,7 +38,7 @@
       "@exception/*": ["exception/*"],
       "@shared/*": ["shared/*"],
       "@logs/*": ["logs/*"],
-      // "@task/*": ["task/*"]
+      "@task/*": ["task/*"]
     }
   },
   "include": ["src", "src/**/*.ts", "test"],
