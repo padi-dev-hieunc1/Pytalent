@@ -12,11 +12,15 @@ export class LogicalQuestions extends BaseEntity {
   @Column()
   title: string;
 
-  @Column()
-  first_statement: string;
+  @Column({
+    name: 'first_statement',
+  })
+  firstStatement: string;
 
-  @Column()
-  second_statement: string;
+  @Column({
+    name: 'second_statement',
+  })
+  secondStatement: string;
 
   @Column()
   conclusion: string;
@@ -33,7 +37,7 @@ export class LogicalQuestions extends BaseEntity {
 
   @OneToMany(
     () => LogicalAnswers,
-    (logical_answer) => logical_answer.logical_question,
+    (logicalAnswer) => logicalAnswer.logicalQuestion,
   )
-  logical_answer: LogicalAnswers[];
+  logicalAnswer: LogicalAnswers[];
 }

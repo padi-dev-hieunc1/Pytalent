@@ -136,7 +136,7 @@ export class MemoryAnswersService {
     });
 
     const resultId = game_result.id;
-    const current_level = game_result.current_question_level;
+    const current_level = game_result.currentQuestionLevel;
 
     if (game_result) {
       const paramUpdate = plainToClass(GameResults, {

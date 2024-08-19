@@ -70,11 +70,11 @@ export class LogicalAnswersService {
         this.i18n.t('message.LOGICAL_ANSWER_NOT_FOUND'),
       );
 
-    if (logicalAnswer.candidate_answer)
+    if (logicalAnswer.candidateAnswer)
       throw new CustomizeException(this.i18n.t('message.LOGICAL_ANSWER_DONE'));
 
     if (
-      result.complete_time <= 90 &&
+      result.completeTime <= 90 &&
       result.status === GameResultStatusEnum.NOT_COMPLETED
     ) {
       const check_correct = params.candidate_answer === question.result ? 1 : 0;

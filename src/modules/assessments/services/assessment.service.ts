@@ -56,50 +56,60 @@ export class AssessmentsService {
   }
 
   async createAssessment(params: CreateAssessmentInterface) {
-    let assessment: CreateAssessmentInterface;
+    const existedHr = await this.checkExistedHr(params.hrId);
 
-    const existed_hr = await this.checkExistedHr(params.hrId);
-
-    if (existed_hr) {
-      const endTime = params.end_time
-        ? moment(params.end_time, 'YYYY-MM-DD HH:mm:ss').toDate()
-        : null;
-
-      const currentTime = new Date();
-      const startTime = params.start_time
-        ? moment(params.start_time, 'YYYY-MM-DD HH:mm:ss').toDate()
-        : currentTime;
-
-      let statusAssessment = params.status;
-
-      if (endTime === null) {
-        statusAssessment = AssessmentStatusEnum.INFINITE;
-      } else {
-        // endTime < currentTime | endTime < startTime -> Expired -> Do not create new assessment
-        endTime.getTime() > startTime.getTime() &&
-        endTime.getTime() > currentTime.getTime()
-          ? (statusAssessment = AssessmentStatusEnum.LIMIT_END_TIME)
-          : (statusAssessment = AssessmentStatusEnum.EXPIRED);
-      }
-
-      const paramCreate: CreateAssessmentInterface = plainToClass(Assessments, {
-        name: params.name,
-        start_time: startTime,
-        end_time: endTime,
-        status: statusAssessment,
-        hrId: params.hrId,
-      });
-
-      if (statusAssessment !== 'Expired') {
-        assessment = await this.assessmentsRepository.save(paramCreate);
-      } else {
-        throw new CustomizeException(this.i18n.t('message.INVALID_END_TIME'));
-      }
-
-      return assessment;
-    } else {
+    if (!existedHr)
       throw new CustomizeException(this.i18n.t('message.HR_NOT_FOUND'));
+
+    const endTime = params.endTime
+      ? moment(params.endTime, 'YYYY-MM-DD HH:mm:ss').toDate()
+      : null;
+
+    const currentTime = new Date();
+    const startTime = params.startTime
+      ? moment(params.startTime, 'YYYY-MM-DD HH:mm:ss').toDate()
+      : currentTime;
+
+    const statusAssessment = this.determineAssessmentStatus(
+      startTime,
+      endTime,
+      currentTime,
+    );
+
+    if (statusAssessment === AssessmentStatusEnum.EXPIRED) {
+      throw new CustomizeException(this.i18n.t('message.INVALID_END_TIME'));
     }
+
+    const paramCreate: CreateAssessmentInterface = plainToClass(Assessments, {
+      name: params.name,
+      startTime: startTime,
+      endTime: endTime,
+      status: statusAssessment,
+      hrId: params.hrId,
+    });
+
+    const assessment = await this.assessmentsRepository.save(paramCreate);
+
+    return assessment;
+  }
+
+  private determineAssessmentStatus(
+    startTime: Date,
+    endTime: Date | null,
+    currentTime: Date,
+  ): AssessmentStatusEnum {
+    if (endTime === null) {
+      return AssessmentStatusEnum.INFINITE;
+    }
+
+    if (
+      endTime.getTime() > startTime.getTime() &&
+      endTime.getTime() > currentTime.getTime()
+    ) {
+      return AssessmentStatusEnum.LIMIT_END_TIME;
+    }
+
+    return AssessmentStatusEnum.EXPIRED;
   }
 
   async getDetailAssessment(assessmentId: number) {
@@ -121,17 +131,18 @@ export class AssessmentsService {
   }
 
   async getAllAssessmentsByHrId(hrId: number) {
-    const existed_hr = await this.checkExistedHr(hrId);
+    const existedHr = await this.checkExistedHr(hrId);
 
-    if (existed_hr) {
-      const list_assessments: Assessments[] =
-        await this.assessmentsRepository.findAllAssessments(hrId);
-
-      if (list_assessments) return list_assessments;
-      else return null;
-    } else {
+    if (!existedHr)
       throw new CustomizeException(this.i18n.t('message.HR_NOT_FOUND'));
-    }
+
+    const listAssessments: Assessments[] =
+      await this.assessmentsRepository.findAllAssessments(hrId);
+
+    if (listAssessments.length === 0)
+      throw new CustomizeException('Hr has not created any assessments before');
+
+    return listAssessments;
   }
 
   async getAllAssessmentsByCandidateId(candidateId: number) {
@@ -297,7 +308,7 @@ export class AssessmentsService {
     let max_score = 0;
     if (games) {
       for (const game of games) {
-        max_score += game.game.total_question_level;
+        max_score += game.game.totalQuestionLevel;
       }
     }
     const updated_assessment = plainToClass(Assessments, {
@@ -317,9 +328,9 @@ export class AssessmentsService {
       },
     });
 
-    if (assessment && assessment.end_time) {
+    if (assessment && assessment.endTime) {
       const currentTime = new Date();
-      const endTime = assessment.end_time;
+      const endTime = assessment.endTime;
 
       if (endTime.getTime() < currentTime.getTime()) {
         const updated_assessment = plainToClass(Assessments, {

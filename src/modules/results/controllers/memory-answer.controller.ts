@@ -34,7 +34,7 @@ export class MemoryAnswersController extends BaseController {
 
     if (
       memoryAnswer.status === AnswerStatusEnum.DONE &&
-      memoryAnswer.is_correct === 0
+      memoryAnswer.isCorrect === 0
     ) {
       const gameResult = await this.gameResultService.getDetailGameResult(
         resultId,
@@ -51,7 +51,7 @@ export class MemoryAnswersController extends BaseController {
       );
     } else if (
       memoryAnswer.status === AnswerStatusEnum.DONE &&
-      memoryAnswer.is_correct === 1
+      memoryAnswer.isCorrect === 1
     ) {
       await this.gameResultService.updateGameResult(resultId, 1);
 
@@ -98,7 +98,7 @@ export class MemoryAnswersController extends BaseController {
               id: memoryAnswer.id,
               level: memoryAnswer.level,
               status: memoryAnswer.status,
-              candidateAnswer: memoryAnswer.candidate_answer,
+              candidateAnswer: memoryAnswer.candidateAnswer,
               resultId: memoryAnswer.resultId,
             },
           },

@@ -20,11 +20,15 @@ export class GameResults extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
-  complete_time: number;
+  @Column({
+    name: 'complete_time',
+  })
+  completeTime: number;
 
-  @Column()
-  complete_question: number;
+  @Column({
+    name: 'complete_question',
+  })
+  completeQuestion: number;
 
   @Column({
     name: 'status',
@@ -36,11 +40,10 @@ export class GameResults extends BaseEntity {
   @Column()
   score: number;
 
-  @Column()
-  current_question_level: number;
-
-  // @Column()
-  // is_playing: number;
+  @Column({
+    name: 'current_question_level',
+  })
+  currentQuestionLevel: number;
 
   @Column()
   assessmentId: number;
@@ -51,30 +54,27 @@ export class GameResults extends BaseEntity {
   @Column()
   candidateId: number;
 
-  @ManyToOne(() => Assessments, (assessment) => assessment.game_result, {
+  @ManyToOne(() => Assessments, (assessment) => assessment.gameResult, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'assessmentId' })
   assessment: Assessments;
 
-  @ManyToOne(() => Games, (game) => game.game_result, {
+  @ManyToOne(() => Games, (game) => game.gameResult, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'gameId' })
   game: Games;
 
-  @ManyToOne(() => Users, (user) => user.game_result, {
+  @ManyToOne(() => Users, (user) => user.gameResult, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'candidateId' })
   candidate: Users;
 
-  @OneToMany(
-    () => LogicalAnswers,
-    (logical_answer) => logical_answer.game_result,
-  )
-  logical_answer: LogicalAnswers[];
+  @OneToMany(() => LogicalAnswers, (logicalAnswer) => logicalAnswer.gameResult)
+  logicalAnswer: LogicalAnswers[];
 
-  @OneToMany(() => MemoryAnswers, (memory_answer) => memory_answer.game_result)
-  memory_answer: MemoryAnswers[];
+  @OneToMany(() => MemoryAnswers, (memoryAnswer) => memoryAnswer.gameResult)
+  memoryAnswer: MemoryAnswers[];
 }

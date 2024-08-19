@@ -15,31 +15,33 @@ export class GamesService {
   ) {}
 
   async createGame(params: CreateGameInterface) {
-    const existed_game: Games = await this.gameRepository.findOne({
+    const existedGame: Games = await this.gameRepository.findOne({
       where: {
         category: params.category,
       },
     });
 
-    if (!existed_game) {
-      const paramCreate: CreateGameInterface = plainToClass(Games, {
-        category: params.category,
-        time_limit: params.time_limit,
-        total_question_level: params.total_question_level,
-      });
-
-      const new_game = await this.gameRepository.save(paramCreate);
-      return new_game;
-    } else {
+    if (existedGame) {
       throw new CustomizeException(this.i18n.t('message.GAME_EXISTED'));
     }
+
+    const paramCreate: CreateGameInterface = plainToClass(Games, {
+      category: params.category,
+      timeLimit: params.timeLimit,
+      totalQuestionLevel: params.totalQuestionLevel,
+    });
+
+    const newGame = await this.gameRepository.save(paramCreate);
+
+    return newGame;
   }
 
   async getAllGames() {
-    const list_games: Games[] = await this.gameRepository.findAllGames();
+    const listGames: Games[] = await this.gameRepository.findAllGames();
 
-    if (list_games) return list_games;
-    else return null;
+    if (!listGames) throw new CustomizeException('No games have been created');
+
+    return listGames;
   }
 
   async getDetailGame(gameId: number) {
@@ -49,7 +51,9 @@ export class GamesService {
       },
     });
 
-    if (game) return game;
-    else throw new CustomizeException(this.i18n.t('message.GAME_NOT_FOUND'));
+    if (!game)
+      throw new CustomizeException(this.i18n.t('message.GAME_NOT_FOUND'));
+
+    return game;
   }
 }

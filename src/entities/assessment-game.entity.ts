@@ -21,11 +21,11 @@ export class AssessmentGames extends BaseEntity {
   @Column()
   gameId: number;
 
-  @ManyToOne(() => Games, (game) => game.assessment_game)
+  @ManyToOne(() => Games, (game) => game.assessmentGame)
   @JoinColumn({ name: 'gameId' })
   game: Games;
 
-  @ManyToOne(() => Assessments, (assessment) => assessment.assessment_game)
+  @ManyToOne(() => Assessments, (assessment) => assessment.assessmentGame)
   @JoinColumn({ name: 'assessmentId' })
   assessment: Assessments;
 }

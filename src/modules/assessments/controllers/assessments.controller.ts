@@ -44,32 +44,27 @@ export class AssessmentsController extends BaseController {
     @Body() createAssessmentDto: CreateAssessmentDto,
     @Res() res: Response,
   ) {
-    const new_assessment = await this.assessmentService.createAssessment(
+    const newAssessment = await this.assessmentService.createAssessment(
       createAssessmentDto,
     );
 
-    if (
-      new_assessment &&
-      new_assessment.status !== AssessmentStatusEnum.EXPIRED
-    ) {
-      return this.successResponse(
-        {
-          data: {
-            new_assessment,
-            links: {
-              create_assessment: CREATE_ASSESSMENT,
-              get_assessments_by_hr_id: GET_ASSESSMENTS_BY_HR_ID,
-              get_detail_assessment: GET_DETAIL_ASSESSMENT,
-              delete_assessment: DELETE_ASSESSMENT,
-              invite_candidate: INVITE_CANDIDATE,
-              update_password: UPDATE_PASSWORD,
-            },
+    return this.successResponse(
+      {
+        data: {
+          newAssessment,
+          links: {
+            createAssessment: CREATE_ASSESSMENT,
+            getAssessmentsByHrId: GET_ASSESSMENTS_BY_HR_ID,
+            getDetailAssessment: GET_DETAIL_ASSESSMENT,
+            deleteAssessment: DELETE_ASSESSMENT,
+            inviteCandidate: INVITE_CANDIDATE,
+            updatePassword: UPDATE_PASSWORD,
           },
-          message: 'Assessment created',
         },
-        res,
-      );
-    }
+        message: 'Assessment created',
+      },
+      res,
+    );
   }
 
   @Get('/:hrId')
@@ -82,44 +77,34 @@ export class AssessmentsController extends BaseController {
       hrId,
     );
 
-    if (assessments.length > 0) {
-      // Have 2 options: remove expired assessment immediately -> return in updateStatusAssessment -> if ok push new array
-      // or set assessment's status to expired -> set status -> still get all assessment include expired assessment
-
-      for (const assessment of assessments) {
-        if (assessment && assessment.end_time) {
-          await this.assessmentService.updateStatusAssessment(assessment.id);
-        }
+    // Have 2 options: remove expired assessment immediately -> return in updateStatusAssessment -> if ok push new array
+    // or set assessment's status to expired -> set status -> still get all assessment include expired assessment
+    for (const assessment of assessments) {
+      if (assessment && assessment.endTime) {
+        await this.assessmentService.updateStatusAssessment(assessment.id);
       }
-
-      const updated_assessments =
-        await this.assessmentService.getAllAssessmentsByHrId(hrId);
-
-      return this.successResponse(
-        {
-          data: {
-            updated_assessments,
-            links: {
-              create_assessment: CREATE_ASSESSMENT,
-              get_assessments_by_hr_id: GET_ASSESSMENTS_BY_HR_ID,
-              get_detail_assessment: GET_DETAIL_ASSESSMENT,
-              delete_assessment: DELETE_ASSESSMENT,
-              invite_candidate: INVITE_CANDIDATE,
-              update_password: UPDATE_PASSWORD,
-            },
-          },
-          message: 'success',
-        },
-        res,
-      );
-    } else {
-      return this.errorsResponse(
-        {
-          message: 'Hr has not created any assessments before',
-        },
-        res,
-      );
     }
+
+    const updated_assessments =
+      await this.assessmentService.getAllAssessmentsByHrId(hrId);
+
+    return this.successResponse(
+      {
+        data: {
+          updated_assessments,
+          links: {
+            createAssessment: CREATE_ASSESSMENT,
+            getAssessmentsByHrId: GET_ASSESSMENTS_BY_HR_ID,
+            getDetailAssessment: GET_DETAIL_ASSESSMENT,
+            deleteAssessment: DELETE_ASSESSMENT,
+            inviteCandidate: INVITE_CANDIDATE,
+            updatePassword: UPDATE_PASSWORD,
+          },
+        },
+        message: 'success',
+      },
+      res,
+    );
   }
 
   @Get('/candidate/:candidateId')
@@ -170,12 +155,12 @@ export class AssessmentsController extends BaseController {
           data: {
             assessment,
             links: {
-              create_assessment: CREATE_ASSESSMENT,
-              get_assessments_by_hr_id: GET_ASSESSMENTS_BY_HR_ID,
-              get_detail_assessment: GET_DETAIL_ASSESSMENT,
-              delete_assessment: DELETE_ASSESSMENT,
-              invite_candidate: INVITE_CANDIDATE,
-              update_password: UPDATE_PASSWORD,
+              createAssessment: CREATE_ASSESSMENT,
+              getAssessmentsByHrId: GET_ASSESSMENTS_BY_HR_ID,
+              getDetailAssessment: GET_DETAIL_ASSESSMENT,
+              deleteAssessment: DELETE_ASSESSMENT,
+              inviteCandidate: INVITE_CANDIDATE,
+              updatePassword: UPDATE_PASSWORD,
             },
           },
           message: 'success',
@@ -200,12 +185,12 @@ export class AssessmentsController extends BaseController {
         {
           data: {
             links: {
-              create_assessment: CREATE_ASSESSMENT,
-              get_assessments_by_hr_id: GET_ASSESSMENTS_BY_HR_ID,
-              get_detail_assessment: GET_DETAIL_ASSESSMENT,
-              delete_assessment: DELETE_ASSESSMENT,
-              invite_candidate: INVITE_CANDIDATE,
-              update_password: UPDATE_PASSWORD,
+              createAssessment: CREATE_ASSESSMENT,
+              getAssessmentsByHrId: GET_ASSESSMENTS_BY_HR_ID,
+              getDetailAssessment: GET_DETAIL_ASSESSMENT,
+              deleteAssessment: DELETE_ASSESSMENT,
+              inviteCandidate: INVITE_CANDIDATE,
+              updatePassword: UPDATE_PASSWORD,
             },
           },
           message: 'deleted success',
@@ -250,12 +235,12 @@ export class AssessmentsController extends BaseController {
           data: {
             invites: filteredInvites,
             links: {
-              create_assessment: CREATE_ASSESSMENT,
-              get_assessments_by_hr_id: GET_ASSESSMENTS_BY_HR_ID,
-              get_detail_assessment: GET_DETAIL_ASSESSMENT,
-              delete_assessment: DELETE_ASSESSMENT,
-              invite_candidate: INVITE_CANDIDATE,
-              update_password: UPDATE_PASSWORD,
+              createAssessment: CREATE_ASSESSMENT,
+              getAssessmentsByHrId: GET_ASSESSMENTS_BY_HR_ID,
+              getDetailAssessment: GET_DETAIL_ASSESSMENT,
+              deleteAssessment: DELETE_ASSESSMENT,
+              inviteCandidate: INVITE_CANDIDATE,
+              updatePassword: UPDATE_PASSWORD,
             },
           },
           message: 'invited success',

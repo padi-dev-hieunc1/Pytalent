@@ -9,6 +9,13 @@ export class GamesRepository extends Repository<GamesEntity> {
   }
 
   async findAllGames(): Promise<any> {
-    return await this.find({});
+    return await this.find({
+      select: {
+        id: true,
+        category: true,
+        timeLimit: true,
+        totalQuestionLevel: true,
+      },
+    });
   }
 }

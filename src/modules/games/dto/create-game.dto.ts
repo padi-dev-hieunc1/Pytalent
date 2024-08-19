@@ -7,8 +7,8 @@ export class CreateGameDto {
   category: GameCategoryEnum;
 
   @IsNotEmpty()
-  time_limit: number;
+  timeLimit: number;
 
   @IsNotEmpty()
-  total_question_level: number;
+  totalQuestionLevel: number;
 }

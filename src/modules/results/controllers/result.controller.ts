@@ -50,7 +50,7 @@ export class GameResultsController extends BaseController {
       this.gameResultService.createGameResults(createGameResultDto),
     ]);
 
-    if (newGameResult?.current_question_level === 1) {
+    if (newGameResult?.currentQuestionLevel === 1) {
       if (game.category === GameCategoryEnum.LOGICAL) {
         const listRandomLogicalQuestions =
           await this.logicalQuestionService.randomLogicalQuestions();
@@ -89,7 +89,7 @@ export class GameResultsController extends BaseController {
           {
             data: {
               question: firstRandomMemoryQuestion.title,
-              timeLimit: firstRandomMemoryQuestion.time_limit,
+              timeLimit: firstRandomMemoryQuestion.timeLimit,
               resultId: newGameResult.id,
             },
             message: 'Start playing game',

@@ -36,32 +36,23 @@ export class HrGamesController extends BaseController {
     @Body() createHrGameDto: CreateHrGameDto,
     @Res() res: Response,
   ) {
-    const new_hr_game = await this.hrGameService.createHrGames(createHrGameDto);
+    const newHrGame = await this.hrGameService.createHrGames(createHrGameDto);
 
-    if (new_hr_game) {
-      return this.successResponse(
-        {
-          data: {
-            new_hr_game,
-            links: {
-              create_hr_game: CREATE_HR_GAME,
-              get_games_by_hr: GET_GAMES_BY_HR_ID,
-              all_hr_games: GET_ALL_HR_GAMES,
-              delete_hr_game: DELETE_HR_GAME,
-            },
+    return this.successResponse(
+      {
+        data: {
+          newHrGame,
+          links: {
+            createHrHame: CREATE_HR_GAME,
+            getGamesByHr: GET_GAMES_BY_HR_ID,
+            allHrGames: GET_ALL_HR_GAMES,
+            deleteHrHame: DELETE_HR_GAME,
           },
-          message: 'Authorized hr to access game success',
         },
-        res,
-      );
-    } else {
-      return this.errorsResponse(
-        {
-          message: 'Can not authorize hr to access game',
-        },
-        res,
-      );
-    }
+        message: 'Authorized hr to access game success',
+      },
+      res,
+    );
   }
 
   @Get('/:hrId')
@@ -74,62 +65,43 @@ export class HrGamesController extends BaseController {
     @Param('hrId') hrId: number,
     @Res() res: Response,
   ) {
-    const all_games = await this.hrGameService.getGamesByHrId(hrId);
+    const listGames = await this.hrGameService.getGamesByHrId(hrId);
 
-    if (all_games.length > 0) {
-      return this.successResponse(
-        {
-          data: {
-            all_games,
-            links: {
-              create_hr_game: CREATE_HR_GAME,
-              get_games_by_hr: GET_GAMES_BY_HR_ID,
-              all_hr_games: GET_ALL_HR_GAMES,
-              delete_hr_game: DELETE_HR_GAME,
-            },
+    return this.successResponse(
+      {
+        data: {
+          listGames,
+          links: {
+            createHrHame: CREATE_HR_GAME,
+            getGamesByHr: GET_GAMES_BY_HR_ID,
+            allHrGames: GET_ALL_HR_GAMES,
+            deleteHrHame: DELETE_HR_GAME,
           },
         },
-        res,
-      );
-    } else {
-      return this.errorsResponse(
-        {
-          message:
-            'This hr have not been authorized to access to any games before',
-        },
-        res,
-      );
-    }
+      },
+      res,
+    );
   }
 
   @Get('/')
   @UseGuards(JwtAuthGuard, new AuthorizationGuard([RoleEnum.ADMIN]))
   async getAllHrGames(@Res() res: Response) {
-    const all_hr_games = await this.hrGameService.getAllHrGames();
+    const allHrGames = await this.hrGameService.getAllHrGames();
 
-    if (all_hr_games) {
-      return this.successResponse(
-        {
-          data: {
-            all_hr_games,
-            links: {
-              create_hr_game: CREATE_HR_GAME,
-              get_games_by_hr: GET_GAMES_BY_HR_ID,
-              all_hr_games: GET_ALL_HR_GAMES,
-              delete_hr_game: DELETE_HR_GAME,
-            },
+    return this.successResponse(
+      {
+        data: {
+          allHrGames,
+          links: {
+            createHrHame: CREATE_HR_GAME,
+            getGamesByHr: GET_GAMES_BY_HR_ID,
+            allHrGames: GET_ALL_HR_GAMES,
+            deleteHrHame: DELETE_HR_GAME,
           },
         },
-        res,
-      );
-    } else {
-      return this.errorsResponse(
-        {
-          message: 'There are not any games authorized to any hr',
-        },
-        res,
-      );
-    }
+      },
+      res,
+    );
   }
 
   @Delete('/delete/:hrId')
@@ -139,30 +111,24 @@ export class HrGamesController extends BaseController {
     @Body() deleteHrGameDto: DeleteHrGameDto,
     @Res() res: Response,
   ) {
-    const delete_hr_game = await this.hrGameService.deleteHrGame(
+    const deleteHrGame = await this.hrGameService.deleteHrGame(
       hrId,
       deleteHrGameDto,
     );
 
-    if (delete_hr_game.affected) {
+    if (deleteHrGame.affected) {
       return this.successResponse(
         {
           data: {
+            deleted: true,
             links: {
-              create_hr_game: CREATE_HR_GAME,
-              get_games_by_hr: GET_GAMES_BY_HR_ID,
-              all_hr_games: GET_ALL_HR_GAMES,
-              delete_hr_game: DELETE_HR_GAME,
+              createHrHame: CREATE_HR_GAME,
+              getGamesByHr: GET_GAMES_BY_HR_ID,
+              allHrGames: GET_ALL_HR_GAMES,
+              deleteHrHame: DELETE_HR_GAME,
             },
           },
           message: 'delete success',
-        },
-        res,
-      );
-    } else {
-      return this.errorsResponse(
-        {
-          message: 'delete failed',
         },
         res,
       );

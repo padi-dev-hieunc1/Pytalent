@@ -18,18 +18,22 @@ export class Games extends BaseEntity {
   })
   category: GameCategoryEnum;
 
-  @Column()
-  time_limit: number;
+  @Column({
+    name: 'time_limit',
+  })
+  timeLimit: number;
 
-  @Column()
-  total_question_level: number;
+  @Column({
+    name: 'total_question_level',
+  })
+  totalQuestionLevel: number;
 
-  @OneToMany(() => HrGames, (hr_game) => hr_game.game)
-  hr_game: HrGames[];
+  @OneToMany(() => HrGames, (hrGame) => hrGame.game)
+  hrGame: HrGames[];
 
-  @OneToMany(() => AssessmentGames, (assessment_game) => assessment_game.game)
-  assessment_game: AssessmentGames[];
+  @OneToMany(() => AssessmentGames, (assessmentGame) => assessmentGame.game)
+  assessmentGame: AssessmentGames[];
 
-  @OneToMany(() => GameResults, (game_result) => game_result.game)
-  game_result: GameResults[];
+  @OneToMany(() => GameResults, (gameResult) => gameResult.game)
+  gameResult: GameResults[];
 }

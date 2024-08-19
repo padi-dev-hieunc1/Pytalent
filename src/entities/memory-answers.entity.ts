@@ -21,11 +21,15 @@ export class MemoryAnswers extends BaseEntity {
   @Column('text')
   title: string;
 
-  @Column()
-  time_limit: number;
+  @Column({
+    name: 'time_limit',
+  })
+  timeLimit: number;
 
-  @Column()
-  is_correct: number;
+  @Column({
+    name: 'is_correct',
+  })
+  isCorrect: number;
 
   @Column({
     name: 'status',
@@ -35,15 +39,17 @@ export class MemoryAnswers extends BaseEntity {
   })
   status: AnswerStatusEnum;
 
-  @Column()
-  candidate_answer: string;
+  @Column({
+    name: 'candidate_answer',
+  })
+  candidateAnswer: string;
 
   @Column()
   resultId: number;
 
-  @ManyToOne(() => GameResults, (game_result) => game_result.memory_answer, {
+  @ManyToOne(() => GameResults, (gameResult) => gameResult.memoryAnswer, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'resultId' })
-  game_result: GameResults;
+  gameResult: GameResults;
 }

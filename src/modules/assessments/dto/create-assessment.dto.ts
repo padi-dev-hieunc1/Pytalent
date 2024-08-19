@@ -6,10 +6,10 @@ export class CreateAssessmentDto {
   name: string;
 
   @IsOptional()
-  start_time?: Date;
+  startTime?: Date;
 
   @IsOptional()
-  end_time?: Date;
+  endTime?: Date;
 
   @IsNotEmpty()
   @IsEnum(AssessmentStatusEnum)

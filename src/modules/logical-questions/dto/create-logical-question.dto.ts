@@ -6,10 +6,10 @@ export class CreateLogicalQuestionDto {
   title: string;
 
   @IsNotEmpty()
-  first_statement: string;
+  firstStatement: string;
 
   @IsNotEmpty()
-  second_statement: string;
+  secondStatement: string;
 
   @IsNotEmpty()
   conclusion: string;
