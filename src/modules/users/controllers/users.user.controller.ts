@@ -2,7 +2,7 @@ import { Body, Controller, Res, Patch } from '@nestjs/common';
 import { Response } from 'express';
 import { UsersService } from '@modules/users/services/users.service';
 import { BaseController } from '@modules/app/base.controller';
-import { UpdateUserPasswordDto } from '../dto/update-user-password';
+import { UpdateUserPasswordDto } from '../dto/update-user-password.dto';
 
 @Controller('api/v1/user')
 export class UsersController extends BaseController {
@@ -19,7 +19,7 @@ export class UsersController extends BaseController {
       updateUserPasswordDto,
     );
 
-    if (password) {
+    if (password.affected) {
       return this.successResponse(
         {
           message: 'Update password success',

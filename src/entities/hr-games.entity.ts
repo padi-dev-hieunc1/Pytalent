@@ -21,11 +21,11 @@ export class HrGames extends BaseEntity {
   @Column()
   gameId: number;
 
-  @ManyToOne(() => Users, (user) => user.hr_game)
+  @ManyToOne(() => Users, (user) => user.hrGame)
   @JoinColumn({ name: 'hrId' })
   hr: Users;
 
-  @ManyToOne(() => Games, (game) => game.hr_game)
+  @ManyToOne(() => Games, (game) => game.hrGame)
   @JoinColumn({ name: 'gameId' })
   game: Games;
 }

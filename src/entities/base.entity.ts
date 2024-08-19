@@ -2,25 +2,25 @@ import { BeforeInsert, BeforeUpdate, Column } from 'typeorm';
 
 export class BaseEntity {
   @Column({
-    // default: () => new Date(new Date().getTime() + 7 * 60 * 60 * 1000),
+    name: 'created_at',
     default: () => new Date(),
   })
-  created_at: Date;
+  createdAt: Date;
 
   @Column({
+    name: 'updated_at',
     default: () => 'CURRENT_TIMESTAMP',
     onUpdate: 'CURRENT_TIMESTAMP',
   })
-  updated_at: Date;
+  updatedAt: Date;
 
   @BeforeInsert()
   setCreatedAt(): void {
-    // this.created_at = new Date(new Date().getTime() + 7 * 60 * 60 * 1000);
-    this.created_at = new Date();
+    this.createdAt = new Date();
   }
 
   @BeforeUpdate()
   setUpdatedAt(): void {
-    this.updated_at = new Date();
+    this.updatedAt = new Date();
   }
 }

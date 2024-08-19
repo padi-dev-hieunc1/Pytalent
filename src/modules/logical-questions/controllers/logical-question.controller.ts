@@ -38,16 +38,16 @@ export class LogicalQuestionsController extends BaseController {
     @Body() createLogicalQuestionDto: CreateLogicalQuestionDto,
     @Res() res: Response,
   ) {
-    const new_logical_question =
+    const newLogicalQuestion =
       await this.logicalQuestionService.createLogicalQuestion(
         createLogicalQuestionDto,
       );
 
-    if (new_logical_question) {
+    if (newLogicalQuestion) {
       return this.successResponse(
         {
           data: {
-            new_logical_question,
+            newLogicalQuestion,
             links: {
               create_logical_question: CREATE_LOGICAL_QUESTION,
               delete_logical_question: DELETE_LOGICAL_QUESTION,

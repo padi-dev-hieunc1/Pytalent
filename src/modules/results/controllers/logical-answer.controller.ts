@@ -99,7 +99,7 @@ export class LogicalAnswersController extends BaseController {
       return { checkAnswer: 3, checkResult: false };
     }
 
-    const checkAnswer: number = logicalAnswer.is_correct === 1 ? 1 : 2;
+    const checkAnswer: number = logicalAnswer.isCorrect === 1 ? 1 : 2;
     const checkResult: boolean = checkAnswer === 1 ? true : false;
 
     return { checkAnswer, checkResult };

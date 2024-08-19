@@ -5,20 +5,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersEntity } from '@entities/index';
 import { UsersAdminController } from '@modules/users/controllers/users.admin.controller';
 import { UsersController } from './controllers/users.user.controller';
-// import { CandidateAssessmentsRepository } from '@modules/assessments/repositories/candidate-assessment.repository';
 
 @Module({
   imports: [TypeOrmModule.forFeature([UsersEntity])],
   controllers: [UsersAdminController, UsersController],
-  providers: [
-    UsersService,
-    UsersRepository,
-    // CandidateAssessmentsRepository,
-  ],
-  exports: [
-    UsersService,
-    UsersRepository,
-    // CandidateAssessmentsRepository,
-  ],
+  providers: [UsersService, UsersRepository],
+  exports: [UsersService, UsersRepository],
 })
 export class UsersModule {}

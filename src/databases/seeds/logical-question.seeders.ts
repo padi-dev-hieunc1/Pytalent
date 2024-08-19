@@ -27,7 +27,7 @@ export default class CreateLogicalQuestions implements Seeder {
       'Statement N',
     ];
 
-    const logical_questions = [];
+    const logicalQuestions = [];
 
     // 50 sample logical question records with result 'No'
     for (let i = 0; i < 53; i++) {
@@ -37,7 +37,7 @@ export default class CreateLogicalQuestions implements Seeder {
       const conclusion = `${firstStatement} is true.`;
       const result = LogicalResultEnum.Yes;
 
-      const sample_yes_logical_question = {
+      const sampleYesLogicalQuestion = {
         title: title,
         first_statement: firstStatement,
         second_statement: secondStatement,
@@ -52,7 +52,7 @@ export default class CreateLogicalQuestions implements Seeder {
         ).toISOString(),
       };
 
-      logical_questions.push(sample_yes_logical_question);
+      logicalQuestions.push(sampleYesLogicalQuestion);
     }
 
     // 50 sample logical question records with result 'No'
@@ -63,7 +63,7 @@ export default class CreateLogicalQuestions implements Seeder {
       const conclusion = `${firstStatement} is false.`;
       const result = LogicalResultEnum.No;
 
-      const sample_no_logical_question = {
+      const sampleNoLogicalQuestion = {
         title: title,
         first_statement: firstStatement,
         second_statement: secondStatement,
@@ -78,14 +78,14 @@ export default class CreateLogicalQuestions implements Seeder {
         ).toISOString(),
       };
 
-      logical_questions.push(sample_no_logical_question);
+      logicalQuestions.push(sampleNoLogicalQuestion);
     }
 
     await connection
       .createQueryBuilder()
       .insert()
       .into(LogicalQuestionsEntity)
-      .values(logical_questions)
+      .values(logicalQuestions)
       .execute();
   }
 }

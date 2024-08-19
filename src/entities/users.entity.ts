@@ -39,15 +39,15 @@ export class Users extends BaseEntity {
   @OneToMany(() => Assessments, (assessment) => assessment.hr)
   assessment: Assessments[];
 
-  @OneToMany(() => HrGames, (hr_game) => hr_game.hr)
-  hr_game: HrGames[];
+  @OneToMany(() => HrGames, (hrGame) => hrGame.hr)
+  hrGame: HrGames[];
 
   @OneToMany(
     () => CandidateAssessments,
-    (candidate_assessment) => candidate_assessment.candidate,
+    (candidateAssessment) => candidateAssessment.candidate,
   )
-  candidate_assessment: CandidateAssessments[];
+  candidateAssessment: CandidateAssessments[];
 
-  @OneToMany(() => GameResults, (game_result) => game_result.candidate)
-  game_result: GameResults[];
+  @OneToMany(() => GameResults, (gameResult) => gameResult.candidate)
+  gameResult: GameResults[];
 }

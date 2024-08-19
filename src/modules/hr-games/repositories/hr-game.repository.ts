@@ -9,7 +9,7 @@ export class HrGamesRepository extends Repository<HrGamesEntity> {
   }
 
   async findAllGamesByHrId(hrId: number): Promise<any> {
-    const hr_games = await this.find({
+    const hrGames = await this.find({
       where: {
         hrId: hrId,
       },
@@ -17,14 +17,39 @@ export class HrGamesRepository extends Repository<HrGamesEntity> {
     });
 
     // Remove fields in hr-games, only return game information
-    const games = hr_games.map((hr_game) => hr_game.game);
+    const games = hrGames.map((hrGame) => hrGame.game);
 
     return games;
   }
 
   async findAllHrGames(): Promise<any> {
-    return await this.find({
+    const hrGames = await this.find({
+      select: {
+        id: true,
+        hrId: true,
+        gameId: true,
+      },
       relations: ['hr', 'game'],
+    });
+
+    return hrGames.map((hrGame) => {
+      const {
+        createdAt: hrCreatedAt,
+        updatedAt: hrUpdatedAt,
+        ...hr
+      } = hrGame.hr;
+
+      const {
+        createdAt: gameCreatedAt,
+        updatedAt: gameUpdatedAt,
+        ...game
+      } = hrGame.game;
+
+      return {
+        ...hrGame,
+        hr: hr,
+        game: game,
+      };
     });
   }
 }

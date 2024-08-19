@@ -22,11 +22,11 @@ export class Assessments extends BaseEntity {
   @Column()
   name: string;
 
-  @Column({ nullable: true })
-  start_time: Date;
+  @Column({ name: 'start_time', nullable: true })
+  startTime: Date;
 
-  @Column({ nullable: true })
-  end_time: Date;
+  @Column({ name: 'end_time', nullable: true })
+  endTime: Date;
 
   @Column({
     type: 'enum',
@@ -35,8 +35,10 @@ export class Assessments extends BaseEntity {
   })
   status: AssessmentStatusEnum;
 
-  @Column()
-  max_score: number;
+  @Column({
+    name: 'max_score',
+  })
+  maxScore: number;
 
   @Column()
   archive: number;
@@ -50,16 +52,16 @@ export class Assessments extends BaseEntity {
 
   @OneToMany(
     () => CandidateAssessments,
-    (candidate_assessment) => candidate_assessment.assessment,
+    (candidateAssessment) => candidateAssessment.assessment,
   )
-  candidate_assessment: CandidateAssessments[];
+  candidateAssessment: CandidateAssessments[];
 
   @OneToMany(
     () => AssessmentGames,
-    (assessment_game) => assessment_game.assessment,
+    (assessmentGame) => assessmentGame.assessment,
   )
-  assessment_game: AssessmentGames[];
+  assessmentGame: AssessmentGames[];
 
-  @OneToMany(() => GameResults, (game_result) => game_result.assessment)
-  game_result: GameResults[];
+  @OneToMany(() => GameResults, (gameResult) => gameResult.assessment)
+  gameResult: GameResults[];
 }

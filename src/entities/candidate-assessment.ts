@@ -29,11 +29,11 @@ export class CandidateAssessments extends BaseEntity {
   @Column()
   assessmentId: number;
 
-  @ManyToOne(() => Users, (user) => user.candidate_assessment)
+  @ManyToOne(() => Users, (user) => user.candidateAssessment)
   @JoinColumn({ name: 'candidateId' })
   candidate: Users;
 
-  @ManyToOne(() => Assessments, (assessment) => assessment.candidate_assessment)
+  @ManyToOne(() => Assessments, (assessment) => assessment.candidateAssessment)
   @JoinColumn({ name: 'assessmentId' })
   assessment: Assessments;
 }

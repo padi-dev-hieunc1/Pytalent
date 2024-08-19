@@ -81,9 +81,9 @@ export class GameResultsService {
       },
       select: [
         'id',
-        'complete_question',
-        'complete_time',
-        'current_question_level',
+        'completeQuestion',
+        'completeTime',
+        'currentQuestionLevel',
         'score',
         'status',
       ],
@@ -138,7 +138,7 @@ export class GameResultsService {
           },
         });
 
-        const start_time = assessment.start_time;
+        const start_time = assessment.startTime;
 
         if (start_time.getTime() > current_time.getTime()) {
           throw new CustomizeException(
@@ -175,22 +175,11 @@ export class GameResultsService {
       },
     });
 
-    const completeTime = existedGameResult.complete_time;
-    const createdAt = existedGameResult.created_at;
-    const updatedAt = existedGameResult.updated_at;
+    const completeTime = existedGameResult.completeTime;
+    const createdAt = existedGameResult.createdAt;
+    const updatedAt = existedGameResult.updatedAt;
 
     const time = this.checkTimePlaying(completeTime, createdAt, updatedAt);
-
-    // const currentTime = new Date();
-    // let time: number = existedGameResult.complete_time;
-
-    // if (completeTime === 0) {
-    //   time = (currentTime.getTime() - createdAt.getTime()) / 1000;
-    // }
-
-    // if (completeTime !== 0) {
-    //   time += (currentTime.getTime() - updatedAt.getTime()) / 1000;
-    // }
 
     const isLogicalGame = game.category === GameCategoryEnum.LOGICAL;
 
@@ -214,28 +203,28 @@ export class GameResultsService {
     time: number,
   ): UpdateGameResultInterface {
     const isCompleted =
-      time > 90 || existedGameResult.current_question_level > 20;
+      time > 90 || existedGameResult.currentQuestionLevel > 20;
 
     return isCompleted
       ? plainToClass(GameResults, {
           status: GameResultStatusEnum.COMPLETED,
-          current_question_level: existedGameResult.current_question_level,
-          complete_question: existedGameResult.complete_question,
-          complete_time: 90,
+          currentQuestionLevel: existedGameResult.currentQuestionLevel,
+          completeQuestion: existedGameResult.completeQuestion,
+          completeTime: 90,
           score: existedGameResult.score,
-          updated_at: Date.now(),
+          updatedAt: Date.now(),
         })
       : plainToClass(GameResults, {
           status: GameResultStatusEnum.NOT_COMPLETED,
-          current_question_level: existedGameResult.current_question_level + 1,
-          complete_question:
+          currentQuestionLevel: existedGameResult.currentQuestionLevel + 1,
+          completeQuestion:
             check !== 3
-              ? existedGameResult.complete_question + 1
-              : existedGameResult.complete_question,
-          complete_time: time,
+              ? existedGameResult.completeQuestion + 1
+              : existedGameResult.completeQuestion,
+          completeTime: time,
           score:
             check === 1 ? existedGameResult.score + 1 : existedGameResult.score,
-          updated_at: Date.now(),
+          updatedAt: Date.now(),
         });
   }
 
@@ -245,11 +234,11 @@ export class GameResultsService {
   ): UpdateGameResultInterface {
     return plainToClass(GameResults, {
       status: GameResultStatusEnum.NOT_COMPLETED,
-      current_question_level: existedGameResult.current_question_level + 1,
-      complete_question: existedGameResult.current_question_level,
-      complete_time: time,
+      currentQuestionLevel: existedGameResult.currentQuestionLevel + 1,
+      completeQuestion: existedGameResult.currentQuestionLevel,
+      completeTime: time,
       score: existedGameResult.score + 1,
-      updated_at: Date.now(),
+      updatedAt: Date.now(),
     });
   }
 
@@ -287,9 +276,6 @@ export class GameResultsService {
   }
 
   async findNextQuestion(resultId: number) {
-    // const game_result = await this.getDetailGameResult(resultId);
-
-    // if (game_result) {
     const nextLogicalAnswer = await this.logicalAnswerRepository
       .createQueryBuilder('logical_answer')
       .where('logical_answer.resultId = :resultId', { resultId })
@@ -304,45 +290,16 @@ export class GameResultsService {
         where: {
           id: nextLogicalAnswer.questionId,
         },
-        select: ['id', 'first_statement', 'second_statement', 'conclusion'],
+        select: ['id', 'firstStatement', 'secondStatement', 'conclusion'],
       });
       return nextQuestion;
     }
 
     return null;
-    // }
-
-    // if (game_result) {
-    //   const first_logical_answer = await this.logicalAnswerRepository
-    //     .createQueryBuilder('logical_answer')
-    //     .where('logical_answer.resultId = :resultId', { resultId })
-    //     .orderBy('logical_answer.id', 'ASC')
-    //     .getOne();
-
-    //   if (first_logical_answer) {
-    //     const continue_id = first_logical_answer.id + current - 1;
-
-    //     const next_logical_answer = await this.logicalAnswerRepository.findOne({
-    //       where: {
-    //         id: continue_id,
-    //       },
-    //     });
-
-    //     if (next_logical_answer) {
-    //       const next_question = await this.logicalQuestionRepository.findOne({
-    //         where: {
-    //           id: next_logical_answer.questionId,
-    //         },
-    //         select: ['id', 'first_statement', 'second_statement', 'conclusion'],
-    //       });
-    //       return next_question;
-    //     }
-    //   }
-    // }
   }
 
   async continueLogicalGame(params: ContinueGameResultInterface) {
-    const game_result = await this.gameResultRepository.findOne({
+    const gameResult = await this.gameResultRepository.findOne({
       where: {
         assessmentId: params.assessmentId,
         gameId: params.gameId,
@@ -350,9 +307,9 @@ export class GameResultsService {
       },
     });
 
-    const resultId = game_result.id;
+    const resultId = gameResult.id;
 
-    if (game_result) {
+    if (gameResult) {
       const paramUpdate = plainToClass(GameResults, {
         updated_at: new Date(),
       });
@@ -381,9 +338,9 @@ export class GameResultsService {
   }
 
   async getAllResults() {
-    const all_results = await this.gameResultRepository.find({});
+    const allResults = await this.gameResultRepository.find({});
 
-    return all_results;
+    return allResults;
   }
 
   async completeGame(resultId: number) {
@@ -392,18 +349,18 @@ export class GameResultsService {
     if (result) {
       const paramUpdate = plainToClass(GameResults, {
         status: GameResultStatusEnum.COMPLETED,
-        complete_time: 90,
-        current_question_level: result.current_question_level,
-        complete_question: result.complete_question,
+        completeTime: 90,
+        currentQuestionLevel: result.currentQuestionLevel,
+        completeQuestion: result.completeQuestion,
         score: result.score,
       });
 
-      const updated_game_result = await this.gameResultRepository.update(
+      const updatedGameResult = await this.gameResultRepository.update(
         resultId,
         paramUpdate,
       );
 
-      if (updated_game_result.affected === 1) {
+      if (updatedGameResult.affected === 1) {
         return paramUpdate;
       } else {
         return null;

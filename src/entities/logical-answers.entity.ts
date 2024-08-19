@@ -16,13 +16,16 @@ export class LogicalAnswers extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
-  candidate_answer: string;
+  @Column({
+    name: 'candidate_answer',
+  })
+  candidateAnswer: string;
 
   @Column({
+    name: 'is_correct',
     default: 0,
   })
-  is_correct: number;
+  isCorrect: number;
 
   @Column({
     name: 'status',
@@ -38,19 +41,19 @@ export class LogicalAnswers extends BaseEntity {
   @Column()
   questionId: number;
 
-  @ManyToOne(() => GameResults, (game_result) => game_result.logical_answer, {
+  @ManyToOne(() => GameResults, (gameResult) => gameResult.logicalAnswer, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'resultId' })
-  game_result: GameResults;
+  gameResult: GameResults;
 
   @ManyToOne(
     () => LogicalQuestions,
-    (logical_question) => logical_question.logical_answer,
+    (logicalQuestion) => logicalQuestion.logicalAnswer,
     {
       onDelete: 'CASCADE',
     },
   )
   @JoinColumn({ name: 'questionId' })
-  logical_question: LogicalQuestions;
+  logicalQuestion: LogicalQuestions;
 }

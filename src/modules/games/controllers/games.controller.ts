@@ -29,53 +29,42 @@ export class GamesController extends BaseController {
   @Post('create')
   @UseGuards(JwtAuthGuard, new AuthorizationGuard([RoleEnum.ADMIN]))
   async createGame(@Body() createGameDto: CreateGameDto, @Res() res: Response) {
-    const new_game = await this.gamesService.createGame(createGameDto);
+    const newGame = await this.gamesService.createGame(createGameDto);
 
-    if (new_game) {
-      return this.successResponse(
-        {
-          data: {
-            new_game,
-            links: {
-              create_new_game: CREATE_GAME,
-              get_all_games: GET_ALL_GAMES,
-              get_detail_game: GET_DETAIL_GAME,
-            },
+    return this.successResponse(
+      {
+        data: {
+          newGame,
+          links: {
+            createNewGame: CREATE_GAME,
+            getAllGames: GET_ALL_GAMES,
+            getDetailGame: GET_DETAIL_GAME,
           },
-          message: 'Create new game success',
         },
-        res,
-      );
-    }
+        message: 'Create new game success',
+      },
+      res,
+    );
   }
 
   @Get('/')
   @UseGuards(JwtAuthGuard, new AuthorizationGuard([RoleEnum.ADMIN]))
   async getAllGames(@Res() res: Response) {
-    const list_games = await this.gamesService.getAllGames();
+    const listGames = await this.gamesService.getAllGames();
 
-    if (list_games) {
-      return this.successResponse(
-        {
-          data: {
-            list_games,
-            links: {
-              create_new_game: CREATE_GAME,
-              get_all_games: GET_ALL_GAMES,
-              get_detail_game: GET_DETAIL_GAME,
-            },
+    return this.successResponse(
+      {
+        data: {
+          listGames,
+          links: {
+            createNewGame: CREATE_GAME,
+            getAllGames: GET_ALL_GAMES,
+            getDetailGame: GET_DETAIL_GAME,
           },
         },
-        res,
-      );
-    } else {
-      return this.errorsResponse(
-        {
-          message: 'No games have been created',
-        },
-        res,
-      );
-    }
+      },
+      res,
+    );
   }
 
   @Get('/:gameId')
@@ -86,20 +75,18 @@ export class GamesController extends BaseController {
   async getDetailGame(@Param('gameId') gameId: number, @Res() res: Response) {
     const game = await this.gamesService.getDetailGame(gameId);
 
-    if (game) {
-      return this.successResponse(
-        {
-          data: {
-            game,
-            links: {
-              create_new_game: CREATE_GAME,
-              get_all_games: GET_ALL_GAMES,
-              get_detail_game: GET_DETAIL_GAME,
-            },
+    return this.successResponse(
+      {
+        data: {
+          game,
+          links: {
+            createNewGame: CREATE_GAME,
+            getAllGames: GET_ALL_GAMES,
+            getDetailGame: GET_DETAIL_GAME,
           },
         },
-        res,
-      );
-    }
+      },
+      res,
+    );
   }
 }

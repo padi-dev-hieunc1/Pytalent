@@ -42,10 +42,6 @@ export class CreateGameResultTable1714897524158 implements MigrationInterface {
             name: 'current_question_level',
             type: 'integer',
           },
-          // {
-          //   name: 'is_playing',
-          //   type: 'integer',
-          // },
           {
             name: 'assessmentId',
             type: 'integer',

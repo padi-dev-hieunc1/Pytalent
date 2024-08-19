@@ -19,8 +19,8 @@ export class LogicalQuestionsService {
       LogicalQuestions,
       {
         title: params.title,
-        first_statement: params.first_statement,
-        second_statement: params.second_statement,
+        firstStatement: params.firstStatement,
+        secondStatement: params.secondStatement,
         conclusion: params.conclusion,
         score: params.score,
         result: params.result,
@@ -127,7 +127,7 @@ export class LogicalQuestionsService {
       where: {
         id: questionId,
       },
-      select: ['id', 'first_statement', 'second_statement', 'conclusion'],
+      select: ['id', 'firstStatement', 'secondStatement', 'conclusion'],
     });
 
     if (logical_question) return logical_question;
