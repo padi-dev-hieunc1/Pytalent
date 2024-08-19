@@ -33,11 +33,11 @@ export class LogicalAnswersService {
       },
     );
 
-    const initial_logical_answer = await this.logicalAnswerRepository.save(
+    const initialLogicalAnswer = await this.logicalAnswerRepository.save(
       paramCreate,
     );
 
-    return initial_logical_answer;
+    return initialLogicalAnswer;
   }
 
   async answerLogicalQuestion(
@@ -45,7 +45,7 @@ export class LogicalAnswersService {
     questionId: number,
     params: AnswerLogicalQuestionInterface,
   ) {
-    const [result, logical_answer, question] = await Promise.all([
+    const [result, logicalAnswer, question] = await Promise.all([
       this.gameResultService.getDetailGameResult(resultId),
       this.logicalAnswerRepository.findOne({
         where: {
@@ -65,52 +65,45 @@ export class LogicalAnswersService {
         this.i18n.t('message.LOGICAL_QUESTION_NOT_FOUND'),
       );
 
-    if (!logical_answer)
+    if (!logicalAnswer)
       throw new CustomizeException(
         this.i18n.t('message.LOGICAL_ANSWER_NOT_FOUND'),
       );
 
-    if (logical_answer.candidate_answer)
+    if (logicalAnswer.candidate_answer)
       throw new CustomizeException(this.i18n.t('message.LOGICAL_ANSWER_DONE'));
 
     if (
       result.complete_time <= 90 &&
       result.status === GameResultStatusEnum.NOT_COMPLETED
     ) {
-      if (question && logical_answer && !logical_answer.candidate_answer) {
-        const check_correct =
-          params.candidate_answer === question.result ? 1 : 0;
-        const answer_status = params.candidate_answer
-          ? AnswerStatusEnum.DONE
-          : AnswerStatusEnum.SKIP;
+      const check_correct = params.candidate_answer === question.result ? 1 : 0;
+      const answer_status = params.candidate_answer
+        ? AnswerStatusEnum.DONE
+        : AnswerStatusEnum.SKIP;
 
-        const paramUpdate = plainToClass(LogicalAnswers, {
-          candidate_answer: params.candidate_answer,
-          is_correct: check_correct,
-          status: answer_status,
-        });
+      const paramUpdate = plainToClass(LogicalAnswers, {
+        candidate_answer: params.candidate_answer,
+        is_correct: check_correct,
+        status: answer_status,
+      });
 
-        await this.logicalAnswerRepository.update(
-          logical_answer.id,
-          paramUpdate,
-        );
+      await this.logicalAnswerRepository.update(logicalAnswer.id, paramUpdate);
 
-        return paramUpdate;
-      }
-    } else {
-      return null;
+      return paramUpdate;
     }
+    return null;
   }
 
   async getDetailLogicalAnswer(resultId: number, questionId: number) {
-    const logical_answer = await this.logicalAnswerRepository.findOne({
+    const logicalAnswer = await this.logicalAnswerRepository.findOne({
       where: {
         resultId: resultId,
         questionId: questionId,
       },
     });
 
-    if (logical_answer) return logical_answer;
+    if (logicalAnswer) return logicalAnswer;
     else
       throw new CustomizeException(
         this.i18n.t('message.LOGICAL_ANSWER_NOT_FOUND'),

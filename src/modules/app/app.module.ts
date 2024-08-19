@@ -33,7 +33,7 @@ import { GameResultsModule } from '@modules/results/result.module';
 import { LogicalQuestionsModule } from '@modules/logical-questions/logical-question.module';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { ScheduleModule } from '@nestjs/schedule';
-import { TasksService } from '@modules/task/task.service';
+// import { TasksService } from '@modules/task/task.service';
 // import { MailModule } from '@modules/mail/mail.module';
 
 const options = databaseConfig as TypeOrmModuleOptions;
@@ -95,7 +95,8 @@ const options = databaseConfig as TypeOrmModuleOptions;
     LogicalQuestionsModule,
   ],
   controllers: [AppController],
-  providers: [AppService, TasksService],
+  // providers: [AppService, TasksService],
+  providers: [AppService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

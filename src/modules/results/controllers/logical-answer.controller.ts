@@ -9,6 +9,7 @@ import { UpdateLogicalAnswerDto } from '../dto/update-logical-answer.dto';
 import { GameResultsService } from '../services/result.service';
 import { GameResultStatusEnum } from '@common/enum/game-result-status.enum';
 import { AnswerStatusEnum } from '@common/enum/answer-status.enum';
+import { LogicalAnswers } from '@entities/logical-answers.entity';
 
 @Controller('api/v1/logical')
 export class LogicalAnswersController extends BaseController {
@@ -27,91 +28,80 @@ export class LogicalAnswersController extends BaseController {
     @Body() updateLogicalAnswerDto: UpdateLogicalAnswerDto,
     @Res() res: Response,
   ) {
-    const logical_answer =
-      await this.logicalAnswerService.answerLogicalQuestion(
-        resultId,
-        questionId,
-        updateLogicalAnswerDto,
-      );
+    const logicalAnswer = await this.logicalAnswerService.answerLogicalQuestion(
+      resultId,
+      questionId,
+      updateLogicalAnswerDto,
+    );
 
-    if (logical_answer) {
-      let check_answer = 0;
-      let check_result = true;
-
-      if (
-        logical_answer.is_correct === 1 &&
-        logical_answer.status === AnswerStatusEnum.DONE
-      ) {
-        check_answer = 1;
-        check_result = true;
-      }
-
-      if (
-        logical_answer.is_correct === 0 &&
-        logical_answer.status === AnswerStatusEnum.DONE
-      ) {
-        check_answer = 2;
-        check_result = false;
-      }
-
-      if (logical_answer.status === AnswerStatusEnum.SKIP) {
-        check_answer = 3;
-        check_result = false;
-      }
-
-      const game_result = await this.gameResultService.updateGameResult(
-        resultId,
-        check_answer,
-      );
-
-      const next_question = await this.gameResultService.findNextQuestion(
-        resultId,
-      );
-
-      if (
-        game_result.complete_time <= 90 &&
-        game_result.status === GameResultStatusEnum.NOT_COMPLETED &&
-        next_question
-      ) {
-        return this.successResponse(
-          {
-            data: {
-              check_result: check_result,
-              next_question: next_question,
-            },
-            message: 'Complete answer question',
-          },
-          res,
-        );
-      } else {
-        const game_result = await this.gameResultService.getDetailGameResult(
-          resultId,
-        );
-
-        return this.successResponse(
-          {
-            data: {
-              game_result: game_result,
-            },
-            message: 'Complete game',
-          },
-          res,
-        );
-      }
-    } else {
-      const game_result = await this.gameResultService.getDetailGameResult(
+    if (!logicalAnswer) {
+      const gameResult = await this.gameResultService.getDetailGameResult(
         resultId,
       );
 
       return this.successResponse(
         {
           data: {
-            game_result: game_result,
+            gameResult: gameResult,
           },
           message: 'Complete game',
         },
         res,
       );
     }
+
+    const { checkAnswer, checkResult } =
+      this.evaluateLogicalAnswer(logicalAnswer);
+
+    const gameResultUpdate = await this.gameResultService.updateGameResult(
+      resultId,
+      checkAnswer,
+    );
+
+    const nextQuestion = await this.gameResultService.findNextQuestion(
+      resultId,
+    );
+
+    if (
+      gameResultUpdate.complete_time <= 90 &&
+      gameResultUpdate.status === GameResultStatusEnum.NOT_COMPLETED &&
+      nextQuestion
+    ) {
+      return this.successResponse(
+        {
+          data: {
+            checkResult: checkResult,
+            nextQuestion: nextQuestion,
+          },
+          message: 'Complete answer question',
+        },
+        res,
+      );
+    }
+
+    const gameResultDetail = await this.gameResultService.getDetailGameResult(
+      resultId,
+    );
+
+    return this.successResponse(
+      {
+        data: {
+          gameResult: gameResultDetail,
+        },
+        message: 'Complete game',
+      },
+      res,
+    );
+  }
+
+  private evaluateLogicalAnswer(logicalAnswer: LogicalAnswers) {
+    if (logicalAnswer.status === AnswerStatusEnum.SKIP) {
+      return { checkAnswer: 3, checkResult: false };
+    }
+
+    const checkAnswer: number = logicalAnswer.is_correct === 1 ? 1 : 2;
+    const checkResult: boolean = checkAnswer === 1 ? true : false;
+
+    return { checkAnswer, checkResult };
   }
 }
