@@ -38,12 +38,12 @@ export class AssessmentGamesController extends BaseController {
     @Body() createAssessmentGameDto: CreateAssessmentGameDto,
     @Res() res: Response,
   ) {
-    const new_assessment_game =
+    const newAssessmentGame =
       await this.assessmentGameService.createAssessmentGame(
         createAssessmentGameDto,
       );
 
-    if (new_assessment_game) {
+    if (newAssessmentGame) {
       await this.assessmentService.updateScoreAssessment(
         createAssessmentGameDto.assessmentId,
       );
@@ -51,7 +51,7 @@ export class AssessmentGamesController extends BaseController {
       return this.successResponse(
         {
           data: {
-            new_assessment_game,
+            newAssessmentGame,
             links: {
               add_game_to_assessment: ADD_GAME_TO_ASSESSMENT,
               get_games_in_assessment: GET_ALL_GAMES_IN_ASSESSMENT,

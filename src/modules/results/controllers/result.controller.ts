@@ -22,7 +22,6 @@ import { LogicalQuestionsService } from '@modules/logical-questions/service/logi
 import { GameCategoryEnum } from '@common/enum/game-category.enum';
 import { GamesService } from '@modules/games/services/games.service';
 import { MemoryAnswersService } from '../services/memory-answer.service';
-import { CONTINUE_GAME } from '@shared/constant/constants';
 
 @Controller('api/v1/results')
 export class GameResultsController extends BaseController {
@@ -46,33 +45,33 @@ export class GameResultsController extends BaseController {
     @Body() createGameResultDto: CreateGameResultDto,
     @Res() res: Response,
   ) {
-    const [game, new_game_result] = await Promise.all([
+    const [game, newGameResult] = await Promise.all([
       this.gameService.getDetailGame(createGameResultDto.gameId),
       this.gameResultService.createGameResults(createGameResultDto),
     ]);
 
-    if (new_game_result?.current_question_level === 1) {
+    if (newGameResult?.current_question_level === 1) {
       if (game.category === GameCategoryEnum.LOGICAL) {
-        const list_random_logical_questions =
+        const listRandomLogicalQuestions =
           await this.logicalQuestionService.randomLogicalQuestions();
 
-        for (const random_question of list_random_logical_questions) {
-          const initial_logical_answer = {
-            resultId: new_game_result.id,
-            questionId: random_question.id,
+        for (const randomQuestion of listRandomLogicalQuestions) {
+          const initialLogicalAnswer = {
+            resultId: newGameResult.id,
+            questionId: randomQuestion.id,
             status: AnswerStatusEnum.NOT_DONE,
           };
 
           await this.logicalAnswerService.createInitialLogicalAnswer(
-            initial_logical_answer,
+            initialLogicalAnswer,
           );
         }
 
         return this.successResponse(
           {
             data: {
-              question: list_random_logical_questions[0],
-              resultId: new_game_result.id,
+              question: listRandomLogicalQuestions[0],
+              resultId: newGameResult.id,
             },
             message: 'Start playing game',
           },
@@ -81,17 +80,17 @@ export class GameResultsController extends BaseController {
       }
 
       if (game.category === GameCategoryEnum.MEMORY) {
-        const first_random_memory_question =
+        const firstRandomMemoryQuestion =
           await this.memoryAnswerService.createMemoryAnswer(
-            new_game_result.id,
+            newGameResult.id,
             1,
           );
         return this.successResponse(
           {
             data: {
-              question: first_random_memory_question.title,
-              time_limit: first_random_memory_question.time_limit,
-              resultId: new_game_result.id,
+              question: firstRandomMemoryQuestion.title,
+              timeLimit: firstRandomMemoryQuestion.time_limit,
+              resultId: newGameResult.id,
             },
             message: 'Start playing game',
           },
@@ -100,15 +99,15 @@ export class GameResultsController extends BaseController {
       }
     } else {
       if (game.category === GameCategoryEnum.LOGICAL) {
-        const logical_question =
+        const logicalQuestion =
           await this.gameResultService.continueLogicalGame(createGameResultDto);
 
-        if (logical_question) {
+        if (logicalQuestion) {
           return this.successResponse(
             {
               data: {
-                continue: new_game_result,
-                question: logical_question,
+                continue: newGameResult,
+                question: logicalQuestion,
               },
               message: 'Continue logical game',
             },
@@ -118,7 +117,7 @@ export class GameResultsController extends BaseController {
           return this.successResponse(
             {
               data: {
-                game_result: new_game_result,
+                gameResult: newGameResult,
               },
               message: 'End game',
             },
@@ -128,16 +127,16 @@ export class GameResultsController extends BaseController {
       }
 
       if (game.category === GameCategoryEnum.MEMORY) {
-        const memory_level = await this.memoryAnswerService.continueMemoryGame(
+        const memoryLevel = await this.memoryAnswerService.continueMemoryGame(
           createGameResultDto,
         );
 
-        if (memory_level) {
+        if (memoryLevel) {
           return this.successResponse(
             {
               data: {
-                continue: new_game_result,
-                question: memory_level,
+                continue: newGameResult,
+                question: memoryLevel,
               },
               message: 'Continue memory game',
             },
@@ -147,7 +146,7 @@ export class GameResultsController extends BaseController {
           return this.successResponse(
             {
               data: {
-                game_result: new_game_result,
+                gameResult: newGameResult,
               },
               message: 'End game',
             },

@@ -26,53 +26,53 @@ export class MemoryAnswersController extends BaseController {
     @Body() updateMemoryAnswer: UpdateMemoryAnswerDto,
     @Res() res: Response,
   ) {
-    const memory_answer = await this.memoryAnswerService.updateMemoryAnswer(
+    const memoryAnswer = await this.memoryAnswerService.updateMemoryAnswer(
       resultId,
       level,
       updateMemoryAnswer,
     );
 
     if (
-      memory_answer.status === AnswerStatusEnum.DONE &&
-      memory_answer.is_correct === 0
+      memoryAnswer.status === AnswerStatusEnum.DONE &&
+      memoryAnswer.is_correct === 0
     ) {
-      const game_result = await this.gameResultService.getDetailGameResult(
+      const gameResult = await this.gameResultService.getDetailGameResult(
         resultId,
       );
 
       return this.successResponse(
         {
           data: {
-            game_result: game_result,
+            gameResult: gameResult,
           },
           message: 'End game',
         },
         res,
       );
     } else if (
-      memory_answer.status === AnswerStatusEnum.DONE &&
-      memory_answer.is_correct === 1
+      memoryAnswer.status === AnswerStatusEnum.DONE &&
+      memoryAnswer.is_correct === 1
     ) {
       await this.gameResultService.updateGameResult(resultId, 1);
 
       if (level === 25) {
         await this.gameResultService.updateGameResultStatus(resultId);
 
-        const game_result = await this.gameResultService.getDetailGameResult(
+        const gameResult = await this.gameResultService.getDetailGameResult(
           resultId,
         );
 
         return this.successResponse(
           {
             data: {
-              game_result: game_result,
+              gameResult: gameResult,
             },
             message: 'End game',
           },
           res,
         );
       } else {
-        const next_memory_question =
+        const nextMemoryQuestion =
           await this.memoryAnswerService.createMemoryAnswer(
             resultId,
             level + 1,
@@ -82,7 +82,7 @@ export class MemoryAnswersController extends BaseController {
           {
             data: {
               check: true,
-              question: next_memory_question,
+              question: nextMemoryQuestion,
             },
             message: 'Complete previous level',
           },
@@ -95,11 +95,11 @@ export class MemoryAnswersController extends BaseController {
           data: {
             check: true,
             question: {
-              id: memory_answer.id,
-              level: memory_answer.level,
-              status: memory_answer.status,
-              candidate_answer: memory_answer.candidate_answer,
-              resultId: memory_answer.resultId,
+              id: memoryAnswer.id,
+              level: memoryAnswer.level,
+              status: memoryAnswer.status,
+              candidateAnswer: memoryAnswer.candidate_answer,
+              resultId: memoryAnswer.resultId,
             },
           },
           message: 'Continue this level',
