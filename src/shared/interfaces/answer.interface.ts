@@ -7,7 +7,7 @@ export interface CreateInitialLogicalAnswerInterface {
 }
 
 export interface AnswerLogicalQuestionInterface {
-  candidate_answer?: string;
+  candidateAnswer?: string;
 }
 
 export interface MemoryAnswerInterface {

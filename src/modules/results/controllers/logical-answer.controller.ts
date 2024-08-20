@@ -7,9 +7,6 @@ import { RoleEnum } from '@enum/role.enum';
 import { LogicalAnswersService } from '../services/logical-answer.service';
 import { UpdateLogicalAnswerDto } from '../dto/update-logical-answer.dto';
 import { GameResultsService } from '../services/result.service';
-import { GameResultStatusEnum } from '@common/enum/game-result-status.enum';
-import { AnswerStatusEnum } from '@common/enum/answer-status.enum';
-import { LogicalAnswers } from '@entities/logical-answers.entity';
 
 @Controller('api/v1/logical')
 export class LogicalAnswersController extends BaseController {
@@ -28,80 +25,42 @@ export class LogicalAnswersController extends BaseController {
     @Body() updateLogicalAnswerDto: UpdateLogicalAnswerDto,
     @Res() res: Response,
   ) {
-    const logicalAnswer = await this.logicalAnswerService.answerLogicalQuestion(
-      resultId,
-      questionId,
-      updateLogicalAnswerDto,
-    );
-
-    if (!logicalAnswer) {
-      const gameResult = await this.gameResultService.getDetailGameResult(
+    // check logical answer
+    const validateLogicalAnswer =
+      await this.logicalAnswerService.validateLogicalAnswer(
         resultId,
+        questionId,
+        updateLogicalAnswerDto,
       );
 
+    await this.gameResultService.updateLogicalGameResult(
+      resultId,
+      validateLogicalAnswer.checkAnswer,
+    );
+
+    // If do not have next question -> last question
+    const nextLogicalQuestion = await this.gameResultService.findNextQuestion(
+      resultId,
+    );
+
+    if (!nextLogicalQuestion) {
       return this.successResponse(
         {
-          data: {
-            gameResult: gameResult,
-          },
-          message: 'Complete game',
+          message: 'Complete logical game',
         },
         res,
       );
     }
-
-    const { checkAnswer, checkResult } =
-      this.evaluateLogicalAnswer(logicalAnswer);
-
-    const gameResultUpdate = await this.gameResultService.updateGameResult(
-      resultId,
-      checkAnswer,
-    );
-
-    const nextQuestion = await this.gameResultService.findNextQuestion(
-      resultId,
-    );
-
-    if (
-      gameResultUpdate.complete_time <= 90 &&
-      gameResultUpdate.status === GameResultStatusEnum.NOT_COMPLETED &&
-      nextQuestion
-    ) {
-      return this.successResponse(
-        {
-          data: {
-            checkResult: checkResult,
-            nextQuestion: nextQuestion,
-          },
-          message: 'Complete answer question',
-        },
-        res,
-      );
-    }
-
-    const gameResultDetail = await this.gameResultService.getDetailGameResult(
-      resultId,
-    );
 
     return this.successResponse(
       {
         data: {
-          gameResult: gameResultDetail,
+          checkResult: validateLogicalAnswer.checkResult,
+          nextQuestion: nextLogicalQuestion,
         },
-        message: 'Complete game',
+        message: 'Complete answer logical question',
       },
       res,
     );
-  }
-
-  private evaluateLogicalAnswer(logicalAnswer: LogicalAnswers) {
-    if (logicalAnswer.status === AnswerStatusEnum.SKIP) {
-      return { checkAnswer: 3, checkResult: false };
-    }
-
-    const checkAnswer: number = logicalAnswer.isCorrect === 1 ? 1 : 2;
-    const checkResult: boolean = checkAnswer === 1 ? true : false;
-
-    return { checkAnswer, checkResult };
   }
 }

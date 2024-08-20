@@ -146,23 +146,22 @@ export class AssessmentsService {
   }
 
   async getAllAssessmentsByCandidateId(candidateId: number) {
-    const existed_candidate = await this.checkExistedCandidate(candidateId);
+    const existedCandidate = await this.checkExistedCandidate(candidateId);
 
-    if (existed_candidate) {
-      const list_candidate_assessments: CandidateAssessments[] =
-        await this.candidateAssessmentsRepository.findAssessmentsByCandidateId(
-          candidateId,
-        );
-
-      if (list_candidate_assessments) {
-        const list_assessments = list_candidate_assessments.map(
-          (list_assessment) => list_assessment.assessment,
-        );
-        return list_assessments;
-      } else return null;
-    } else {
+    if (!existedCandidate)
       throw new CustomizeException(this.i18n.t('message.CANDIDATE_NOT_FOUND'));
-    }
+
+    const listCandidateAssessments: CandidateAssessments[] =
+      await this.candidateAssessmentsRepository.findAssessmentsByCandidateId(
+        candidateId,
+      );
+
+    if (listCandidateAssessments) {
+      const listAssessments = listCandidateAssessments.map(
+        (listAssessment) => listAssessment.assessment,
+      );
+      return listAssessments;
+    } else return null;
   }
 
   async deleteAssessment(assessmentId: number) {
