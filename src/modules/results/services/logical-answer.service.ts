@@ -67,14 +67,15 @@ export class LogicalAnswersService {
       paramUpdate,
     );
 
-    if (answerStatus === AnswerStatusEnum.SKIP) {
-      return { checkAnswer: 3, checkResult: false };
+    if (checkCorrect) {
+      return {
+        checkResult: true,
+      };
     }
 
-    const checkAnswer: number = checkCorrect === 1 ? 1 : 2;
-    const checkResult: boolean = checkAnswer === 1 ? true : false;
-
-    return { checkAnswer, checkResult };
+    return {
+      checkResult: false,
+    };
   }
 
   async getLogicalQuestion(questionId: number) {

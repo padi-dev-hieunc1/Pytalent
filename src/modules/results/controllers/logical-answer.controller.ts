@@ -25,6 +25,9 @@ export class LogicalAnswersController extends BaseController {
     @Body() updateLogicalAnswerDto: UpdateLogicalAnswerDto,
     @Res() res: Response,
   ) {
+    // game ended -> can not answer
+    await this.gameResultService.validateGameResult(resultId);
+
     // check logical answer
     const validateLogicalAnswer =
       await this.logicalAnswerService.validateLogicalAnswer(
@@ -35,7 +38,7 @@ export class LogicalAnswersController extends BaseController {
 
     await this.gameResultService.updateLogicalGameResult(
       resultId,
-      validateLogicalAnswer.checkAnswer,
+      validateLogicalAnswer.checkResult,
     );
 
     // If do not have next question -> last question

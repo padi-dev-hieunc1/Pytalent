@@ -35,7 +35,7 @@ export class GameResultsService {
     private readonly i18n: I18nService,
   ) {}
 
-  async updateLogicalGameResult(resultId: number, checkAnswer: number) {
+  async updateLogicalGameResult(resultId: number, checkAnswer: boolean) {
     const existedGameResult: GameResults = await this.getGameResult(resultId);
 
     const completeTime = existedGameResult.completeTime;
@@ -47,13 +47,10 @@ export class GameResultsService {
     const paramUpdate: UpdateGameResultInterface = plainToClass(GameResults, {
       status: GameResultStatusEnum.NOT_COMPLETED,
       currentQuestionLevel: existedGameResult.currentQuestionLevel + 1,
-      completeQuestion:
-        checkAnswer !== 3
-          ? existedGameResult.completeQuestion + 1
-          : existedGameResult.completeQuestion,
+      completeQuestion: existedGameResult.completeQuestion + 1,
       completeTime: time,
       score:
-        checkAnswer === 1
+        checkAnswer === true
           ? existedGameResult.score + 1
           : existedGameResult.score,
       updatedAt: Date.now(),
@@ -140,6 +137,19 @@ export class GameResultsService {
     }
 
     return time;
+  }
+
+  async validateGameResult(resultId: number) {
+    const result = await this.getGameResult(resultId);
+
+    if (
+      result.completeTime === 90 ||
+      result.status === GameResultStatusEnum.COMPLETED
+    ) {
+      throw new CustomizeException('Game finished');
+    }
+
+    return;
   }
 
   async checkExistedCandidate(candidateId: number) {
