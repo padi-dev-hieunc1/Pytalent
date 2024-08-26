@@ -53,7 +53,7 @@ export class MemoryAnswersController extends BaseController {
       memoryAnswer.status === AnswerStatusEnum.DONE &&
       memoryAnswer.isCorrect === 1
     ) {
-      await this.gameResultService.updateGameResult(resultId, 1);
+      await this.gameResultService.updateMemoryGameResult(resultId);
 
       if (level === 25) {
         await this.gameResultService.updateGameResultStatus(resultId);

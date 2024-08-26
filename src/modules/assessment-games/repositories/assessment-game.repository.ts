@@ -1,11 +1,11 @@
-import { AssessmentGamesEntity } from '@entities';
+import { AssessmentGames } from '@entities/assessment-game.entity';
 import { Injectable } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
 
 @Injectable()
-export class AssessmentGamesRepository extends Repository<AssessmentGamesEntity> {
+export class AssessmentGamesRepository extends Repository<AssessmentGames> {
   constructor(private dataSource: DataSource) {
-    super(AssessmentGamesEntity, dataSource.createEntityManager());
+    super(AssessmentGames, dataSource.createEntityManager());
   }
 
   async findAllGames(assessmentId: number): Promise<any> {
