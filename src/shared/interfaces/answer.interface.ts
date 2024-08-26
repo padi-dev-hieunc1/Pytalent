@@ -11,5 +11,5 @@ export interface AnswerLogicalQuestionInterface {
 }
 
 export interface MemoryAnswerInterface {
-  candidate_answer: string;
+  candidateAnswer: string;
 }

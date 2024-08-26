@@ -20,31 +20,31 @@ export class MemoryAnswersService {
     private readonly i18n: I18nService,
   ) {}
   async createMemoryAnswer(resultId: number, level: number) {
-    const game_result = await this.gameResultService.getDetailGameResult(
+    const gameResult = await this.gameResultService.getDetailGameResult(
       resultId,
     );
 
-    if (game_result.assessment.archive === 1) {
+    if (gameResult.assessment.archive === 1) {
       throw new CustomizeException(this.i18n.t('message.ASSESSMENT_ARCHIVED'));
     }
 
-    const memory_answer = await this.getDetailMemoryAnswer(resultId, level);
+    const memoryAnswer = await this.getDetailMemoryAnswer(resultId, level);
 
-    if (!memory_answer) {
-      const random_title = this.randomMemoryTitle(level);
+    if (!memoryAnswer) {
+      const randomTitle = this.randomMemoryTitle(level);
       const paramCreate = plainToClass(MemoryAnswers, {
         resultId: resultId,
-        title: random_title,
+        title: randomTitle,
         status: AnswerStatusEnum.NOT_DONE,
         level: level,
-        time_limit: level > 3 ? level : 3,
+        timeLimit: level > 3 ? level : 3,
       });
 
-      const initial_memory_answer = await this.memoryAnswerRepository.save(
+      const initialMemoryAnswer = await this.memoryAnswerRepository.save(
         paramCreate,
       );
 
-      return initial_memory_answer;
+      return initialMemoryAnswer;
     }
   }
 
@@ -63,7 +63,7 @@ export class MemoryAnswersService {
   }
 
   async getDetailMemoryAnswer(resultId: number, level: number) {
-    const memory_answer: MemoryAnswers =
+    const memoryAnswer: MemoryAnswers =
       await this.memoryAnswerRepository.findOne({
         where: {
           resultId: resultId,
@@ -71,7 +71,7 @@ export class MemoryAnswersService {
         },
       });
 
-    if (memory_answer) return memory_answer;
+    if (memoryAnswer) return memoryAnswer;
   }
 
   async updateMemoryAnswer(
@@ -79,55 +79,55 @@ export class MemoryAnswersService {
     level: number,
     updateMemoryAnswer: MemoryAnswerInterface,
   ) {
-    const memory_answer = await this.getDetailMemoryAnswer(resultId, level);
+    const memoryAnswer = await this.getDetailMemoryAnswer(resultId, level);
 
-    const title_patterns = memory_answer.title.split(' ');
-    const title_len = title_patterns.length;
-    const candidate_patterns = updateMemoryAnswer.candidate_answer.split(' ');
-    const len = candidate_patterns.length;
+    const titlePatterns = memoryAnswer.title.split(' ');
+    const titleLen = titlePatterns.length;
+    const candidatePatterns = updateMemoryAnswer.candidateAnswer.split(' ');
+    const len = candidatePatterns.length;
 
     // Compare elements of 2 above arrays
-    if (candidate_patterns[len - 1] !== title_patterns[len - 1]) {
+    if (candidatePatterns[len - 1] !== titlePatterns[len - 1]) {
       const paramUpdate = plainToClass(MemoryAnswers, {
-        candidate_answer: updateMemoryAnswer.candidate_answer,
-        is_correct: 0,
+        candidateAnswer: updateMemoryAnswer.candidateAnswer,
+        isCorrect: 0,
         status: AnswerStatusEnum.DONE,
       });
 
-      await this.memoryAnswerRepository.update(memory_answer.id, paramUpdate);
+      await this.memoryAnswerRepository.update(memoryAnswer.id, paramUpdate);
 
       await this.gameResultService.updateGameResultStatus(resultId);
     } else if (
-      candidate_patterns[len - 1] === title_patterns[len - 1] &&
-      len < title_len
+      candidatePatterns[len - 1] === titlePatterns[len - 1] &&
+      len < titleLen
     ) {
       const paramUpdate = plainToClass(MemoryAnswers, {
-        candidate_answer: updateMemoryAnswer.candidate_answer,
-        is_correct: 0,
+        candidateAnswer: updateMemoryAnswer.candidateAnswer,
+        isCorrect: 0,
         status: AnswerStatusEnum.NOT_DONE,
       });
 
-      await this.memoryAnswerRepository.update(memory_answer.id, paramUpdate);
+      await this.memoryAnswerRepository.update(memoryAnswer.id, paramUpdate);
     } else {
       const paramUpdate = plainToClass(MemoryAnswers, {
-        candidate_answer: updateMemoryAnswer.candidate_answer,
-        is_correct: 1,
+        candidateAnswer: updateMemoryAnswer.candidateAnswer,
+        isCorrect: 1,
         status: AnswerStatusEnum.DONE,
       });
 
-      await this.memoryAnswerRepository.update(memory_answer.id, paramUpdate);
+      await this.memoryAnswerRepository.update(memoryAnswer.id, paramUpdate);
     }
 
-    const updated_memory_answer = await this.getDetailMemoryAnswer(
+    const updatedMemoryAnswer = await this.getDetailMemoryAnswer(
       resultId,
       level,
     );
 
-    return updated_memory_answer;
+    return updatedMemoryAnswer;
   }
 
   async continueMemoryGame(params: ContinueGameResultInterface) {
-    const game_result = await this.gameResultRepository.findOne({
+    const gameResult = await this.gameResultRepository.findOne({
       where: {
         assessmentId: params.assessmentId,
         gameId: params.gameId,
@@ -135,26 +135,26 @@ export class MemoryAnswersService {
       },
     });
 
-    const resultId = game_result.id;
-    const current_level = game_result.currentQuestionLevel;
+    const resultId = gameResult.id;
+    const currentLevel = gameResult.currentQuestionLevel;
 
-    if (game_result) {
+    if (gameResult) {
       const paramUpdate = plainToClass(GameResults, {
         updatedAt: new Date(),
       });
 
-      const updated_game_result = await this.gameResultRepository.update(
+      const updatedGameResult = await this.gameResultRepository.update(
         resultId,
         paramUpdate,
       );
 
-      if (updated_game_result.affected === 1) {
-        const next_level = await this.getDetailMemoryAnswer(
+      if (updatedGameResult.affected === 1) {
+        const nextLevel = await this.getDetailMemoryAnswer(
           resultId,
-          current_level,
+          currentLevel,
         );
 
-        return next_level;
+        return nextLevel;
       } else {
         return null;
       }
