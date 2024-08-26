@@ -99,8 +99,7 @@ describe('LogicalAnswersService unit', () => {
         mockLogicalAnswer,
       );
 
-      const result = await logicalAnswersService.validateLogicalAnswer(
-        resultId,
+      const result = await logicalAnswersService.isLogicalAnswerCorrect(
         questionId,
         params,
       );
@@ -131,7 +130,7 @@ describe('LogicalAnswersService unit', () => {
       mockLogicalQuestionsRepository.findOne.mockResolvedValueOnce(null);
 
       await expect(
-        logicalAnswersService.validateLogicalAnswer(1, questionId, {
+        logicalAnswersService.isLogicalAnswerCorrect(questionId, {
           candidateAnswer: 'Yes',
         }),
       ).rejects.toThrow(CustomizeException);
@@ -160,7 +159,7 @@ describe('LogicalAnswersService unit', () => {
       );
 
       await expect(
-        logicalAnswersService.validateLogicalAnswer(resultId, questionId, {
+        logicalAnswersService.isLogicalAnswerCorrect(questionId, {
           candidateAnswer: 'Yes',
         }),
       ).rejects.toThrow(CustomizeException);
