@@ -1,10 +1,10 @@
-import { GameResultsEntity } from '@entities';
+import { GameResults } from '@entities/games-results.entity';
 import { Injectable } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
 
 @Injectable()
-export class GameResultsRepository extends Repository<GameResultsEntity> {
+export class GameResultsRepository extends Repository<GameResults> {
   constructor(private dataSource: DataSource) {
-    super(GameResultsEntity, dataSource.createEntityManager());
+    super(GameResults, dataSource.createEntityManager());
   }
 }

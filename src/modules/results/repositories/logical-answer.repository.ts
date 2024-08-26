@@ -1,10 +1,10 @@
-import { LogicalAnswersEntity } from '@entities';
+import { LogicalAnswers } from '@entities/logical-answers.entity';
 import { Injectable } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
 
 @Injectable()
-export class LogicalAnswersRepository extends Repository<LogicalAnswersEntity> {
+export class LogicalAnswersRepository extends Repository<LogicalAnswers> {
   constructor(private dataSource: DataSource) {
-    super(LogicalAnswersEntity, dataSource.createEntityManager());
+    super(LogicalAnswers, dataSource.createEntityManager());
   }
 }

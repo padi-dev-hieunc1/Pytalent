@@ -34,6 +34,123 @@ export class GameResultsService {
     private readonly i18n: I18nService,
   ) {}
 
+  async updateLogicalGameResult(resultId: number, checkAnswer: boolean) {
+    const existedGameResult: GameResults = await this.getGameResult(resultId);
+
+    const completeTime = existedGameResult.completeTime;
+    const createdAt = existedGameResult.createdAt;
+    const updatedAt = existedGameResult.updatedAt;
+
+    const time = this.getTimePlay(completeTime, createdAt, updatedAt);
+
+    const paramUpdate: UpdateGameResultInterface = plainToClass(GameResults, {
+      status: GameResultStatusEnum.NOT_COMPLETED,
+      currentQuestionLevel: existedGameResult.currentQuestionLevel + 1,
+      completeQuestion: existedGameResult.completeQuestion + 1,
+      completeTime: time,
+      score:
+        checkAnswer === true
+          ? existedGameResult.score + 1
+          : existedGameResult.score,
+      updatedAt: Date.now(),
+    });
+
+    const updatedLogicalGameResult = await this.gameResultRepository
+      .createQueryBuilder('game_result')
+      .update(GameResults)
+      .set(paramUpdate)
+      .where('id = :id', { id: resultId })
+      .execute();
+
+    if (updatedLogicalGameResult?.affected === 1) return paramUpdate;
+  }
+
+  async updateMemoryGameResult(resultId: number) {
+    const existedGameResult: GameResults = await this.getGameResult(resultId);
+
+    const completeTime = existedGameResult.completeTime;
+    const createdAt = existedGameResult.createdAt;
+    const updatedAt = existedGameResult.updatedAt;
+
+    const time = this.getTimePlay(completeTime, createdAt, updatedAt);
+
+    const paramUpdate: UpdateGameResultInterface = plainToClass(GameResults, {
+      status: GameResultStatusEnum.NOT_COMPLETED,
+      currentQuestionLevel: existedGameResult.currentQuestionLevel + 1,
+      completeQuestion: existedGameResult.currentQuestionLevel,
+      completeTime: time,
+      score: existedGameResult.score + 1,
+      updatedAt: Date.now(),
+    });
+
+    const updatedMemoryGameResult = await this.gameResultRepository
+      .createQueryBuilder('game_result')
+      .update(GameResults)
+      .set(paramUpdate)
+      .where('id = :id', { id: resultId })
+      .execute();
+
+    if (updatedMemoryGameResult?.affected === 1) return paramUpdate;
+  }
+
+  async getGameResult(resultId: number) {
+    const gameResult = await this.getDetailGameResult(resultId);
+
+    return gameResult;
+  }
+
+  async getDetailGameResult(resultId: number) {
+    const gameResult: GameResults = await this.gameResultRepository.findOne({
+      where: {
+        id: resultId,
+      },
+      select: [
+        'id',
+        'completeQuestion',
+        'completeTime',
+        'currentQuestionLevel',
+        'score',
+        'status',
+        'createdAt',
+        'updatedAt',
+      ],
+      relations: ['assessment', 'game', 'candidate'],
+    });
+
+    if (!gameResult)
+      throw new CustomizeException(this.i18n.t('message.RESULT_NOT_FOUND'));
+
+    return gameResult;
+  }
+
+  private getTimePlay(completeTime: number, createdAt: Date, updatedAt: Date) {
+    const currentTime = new Date();
+    let time: number = completeTime;
+
+    if (completeTime === 0) {
+      time = (currentTime.getTime() - createdAt.getTime()) / 1000;
+    }
+
+    if (completeTime !== 0) {
+      time += (currentTime.getTime() - updatedAt.getTime()) / 1000;
+    }
+
+    return time;
+  }
+
+  async validateGameResult(resultId: number) {
+    const result = await this.getGameResult(resultId);
+
+    if (
+      result.completeTime === 90 ||
+      result.status === GameResultStatusEnum.COMPLETED
+    ) {
+      throw new CustomizeException('Game finished');
+    }
+
+    return;
+  }
+
   async checkExistedCandidate(candidateId: number) {
     const candidate: Users = await this.usersRepository.findOne({
       where: {
@@ -72,26 +189,6 @@ export class GameResultsService {
       }
       return true;
     } else return false;
-  }
-
-  async getDetailGameResult(resultId: number) {
-    const game_result: GameResults = await this.gameResultRepository.findOne({
-      where: {
-        id: resultId,
-      },
-      select: [
-        'id',
-        'completeQuestion',
-        'completeTime',
-        'currentQuestionLevel',
-        'score',
-        'status',
-      ],
-      relations: ['assessment'],
-    });
-
-    if (game_result) return game_result;
-    else throw new CustomizeException(this.i18n.t('message.RESULT_NOT_FOUND'));
   }
 
   async createGameResults(params: CreateInitialGameResultInterface) {
@@ -152,7 +249,7 @@ export class GameResultsService {
               gameId: params.gameId,
               candidateId: params.candidateId,
               status: GameResultStatusEnum.NOT_COMPLETED,
-              current_question_level: 1,
+              currentQuestionLevel: 1,
             },
           );
 
@@ -162,117 +259,6 @@ export class GameResultsService {
         }
       }
     }
-  }
-
-  async updateGameResult(resultId: number, check: number) {
-    const existedGameResult: GameResults = await this.getExistedGameResult(
-      resultId,
-    );
-
-    const game = await this.gamesRepository.findOne({
-      where: {
-        id: existedGameResult.gameId,
-      },
-    });
-
-    const completeTime = existedGameResult.completeTime;
-    const createdAt = existedGameResult.createdAt;
-    const updatedAt = existedGameResult.updatedAt;
-
-    const time = this.checkTimePlaying(completeTime, createdAt, updatedAt);
-
-    const isLogicalGame = game.category === GameCategoryEnum.LOGICAL;
-
-    const paramUpdate: UpdateGameResultInterface = isLogicalGame
-      ? this.updateLogicalGameResult(existedGameResult, check, time)
-      : this.updateMemoryGameResult(existedGameResult, time);
-
-    const updatedGameResult = await this.gameResultRepository
-      .createQueryBuilder('game_result')
-      .update(GameResults)
-      .set(paramUpdate)
-      .where('id = :id', { id: resultId })
-      .execute();
-
-    if (updatedGameResult?.affected === 1) return paramUpdate;
-  }
-
-  private updateLogicalGameResult(
-    existedGameResult: GameResults,
-    check: number,
-    time: number,
-  ): UpdateGameResultInterface {
-    const isCompleted =
-      time > 90 || existedGameResult.currentQuestionLevel > 20;
-
-    return isCompleted
-      ? plainToClass(GameResults, {
-          status: GameResultStatusEnum.COMPLETED,
-          currentQuestionLevel: existedGameResult.currentQuestionLevel,
-          completeQuestion: existedGameResult.completeQuestion,
-          completeTime: 90,
-          score: existedGameResult.score,
-          updatedAt: Date.now(),
-        })
-      : plainToClass(GameResults, {
-          status: GameResultStatusEnum.NOT_COMPLETED,
-          currentQuestionLevel: existedGameResult.currentQuestionLevel + 1,
-          completeQuestion:
-            check !== 3
-              ? existedGameResult.completeQuestion + 1
-              : existedGameResult.completeQuestion,
-          completeTime: time,
-          score:
-            check === 1 ? existedGameResult.score + 1 : existedGameResult.score,
-          updatedAt: Date.now(),
-        });
-  }
-
-  private updateMemoryGameResult(
-    existedGameResult: GameResults,
-    time: number,
-  ): UpdateGameResultInterface {
-    return plainToClass(GameResults, {
-      status: GameResultStatusEnum.NOT_COMPLETED,
-      currentQuestionLevel: existedGameResult.currentQuestionLevel + 1,
-      completeQuestion: existedGameResult.currentQuestionLevel,
-      completeTime: time,
-      score: existedGameResult.score + 1,
-      updatedAt: Date.now(),
-    });
-  }
-
-  private async getExistedGameResult(resultId: number) {
-    const existedGameResult: GameResults =
-      await this.gameResultRepository.findOne({
-        where: {
-          id: resultId,
-        },
-      });
-
-    if (!existedGameResult)
-      throw new CustomizeException(this.i18n.t('message.RESULT_NOT_FOUND'));
-
-    return existedGameResult;
-  }
-
-  private checkTimePlaying(
-    completeTime: number,
-    createdAt: Date,
-    updatedAt: Date,
-  ) {
-    const currentTime = new Date();
-    let time: number = completeTime;
-
-    if (completeTime === 0) {
-      time = (currentTime.getTime() - createdAt.getTime()) / 1000;
-    }
-
-    if (completeTime !== 0) {
-      time += (currentTime.getTime() - updatedAt.getTime()) / 1000;
-    }
-
-    return time;
   }
 
   async findNextQuestion(resultId: number) {
@@ -311,7 +297,7 @@ export class GameResultsService {
 
     if (gameResult) {
       const paramUpdate = plainToClass(GameResults, {
-        updated_at: new Date(),
+        updatedAt: new Date(),
       });
 
       const updated_game_result = await this.gameResultRepository.update(
@@ -346,25 +332,30 @@ export class GameResultsService {
   async completeGame(resultId: number) {
     const result = await this.getDetailGameResult(resultId);
 
-    if (result) {
-      const paramUpdate = plainToClass(GameResults, {
-        status: GameResultStatusEnum.COMPLETED,
-        completeTime: 90,
-        currentQuestionLevel: result.currentQuestionLevel,
-        completeQuestion: result.completeQuestion,
-        score: result.score,
-      });
+    const paramUpdate = plainToClass(GameResults, {
+      status: GameResultStatusEnum.COMPLETED,
+      completeTime: 90,
+      currentQuestionLevel: result.currentQuestionLevel,
+      completeQuestion: result.completeQuestion,
+      score: result.score,
+    });
 
-      const updatedGameResult = await this.gameResultRepository.update(
-        resultId,
-        paramUpdate,
-      );
+    const updatedGameResult = await this.gameResultRepository.update(
+      resultId,
+      paramUpdate,
+    );
 
-      if (updatedGameResult.affected === 1) {
-        return paramUpdate;
-      } else {
-        return null;
-      }
+    if (updatedGameResult.affected === 1) {
+      return paramUpdate;
     }
+
+    return null;
   }
+
+  // async isLastLogicalQuestion(resultId: number) {
+  //   const result = await this.getGameResult(resultId);
+
+  //   if (result.currentQuestionLevel >= 20) return false;
+  //   return true;
+  // }
 }

@@ -1,11 +1,11 @@
-import { HrGamesEntity } from '@entities';
+import { HrGames } from '@entities/hr-games.entity';
 import { Injectable } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
 
 @Injectable()
-export class HrGamesRepository extends Repository<HrGamesEntity> {
+export class HrGamesRepository extends Repository<HrGames> {
   constructor(private dataSource: DataSource) {
-    super(HrGamesEntity, dataSource.createEntityManager());
+    super(HrGames, dataSource.createEntityManager());
   }
 
   async findAllGamesByHrId(hrId: number): Promise<any> {
