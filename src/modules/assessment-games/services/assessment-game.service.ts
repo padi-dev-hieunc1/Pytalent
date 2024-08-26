@@ -77,7 +77,7 @@ export class AssessmentGamesService {
       throw new CustomizeException(this.i18n.t('message.GAME_NOT_FOUND'));
     }
 
-    const existed_assessment_game: AssessmentGames =
+    const existedAssessmentGame: AssessmentGames =
       await this.assessmentGamesRepository.findOne({
         where: {
           assessmentId: params.assessmentId,
@@ -85,7 +85,7 @@ export class AssessmentGamesService {
         },
       });
 
-    if (!existed_assessment_game) {
+    if (!existedAssessmentGame) {
       const assessment: Assessments = await this.assessmentsRepository.findOne({
         where: {
           id: params.assessmentId,
@@ -93,12 +93,12 @@ export class AssessmentGamesService {
         relations: ['hr'],
       });
 
-      const check_permission = await this.checkPermissionGameOfHr(
+      const checkPermission = await this.checkPermissionGameOfHr(
         assessment.hrId,
         params.gameId,
       );
 
-      if (check_permission) {
+      if (checkPermission) {
         const paramCreate: CreateAssessmentGameInterface = plainToClass(
           AssessmentGames,
           {
@@ -119,20 +119,20 @@ export class AssessmentGamesService {
   }
 
   async getAllGamesInAssessment(assessmentId: number) {
-    const existed_assessment = await this.checkExistedAssessment(assessmentId);
+    const existedAssessment = await this.checkExistedAssessment(assessmentId);
 
-    if (existed_assessment) {
-      const all_games: AssessmentGames[] =
-        await this.assessmentGamesRepository.findAllGames(assessmentId);
-
-      if (all_games) return all_games;
-      else
-        throw new CustomizeException(
-          this.i18n.t('message.NO_GAMES_IN_ASSESSMENT'),
-        );
-    } else {
+    if (!existedAssessment)
       throw new CustomizeException(this.i18n.t('message.ASSESSMENT_NOT_FOUND'));
-    }
+
+    const allGames: AssessmentGames[] =
+      await this.assessmentGamesRepository.findAllGames(assessmentId);
+
+    if (!allGames)
+      throw new CustomizeException(
+        this.i18n.t('message.NO_GAMES_IN_ASSESSMENT'),
+      );
+
+    return allGames;
   }
 
   async deleteAssessmentGame(
@@ -148,14 +148,12 @@ export class AssessmentGamesService {
     if (!existedGame)
       throw new CustomizeException(this.i18n.t('message.GAME_NOT_FOUND'));
 
-    if (existedAssessment && existedGame) {
-      return await this.assessmentGamesRepository
-        .createQueryBuilder()
-        .delete()
-        .from(AssessmentGames)
-        .where('assessmentId = :assessmentId', { assessmentId: assessmentId })
-        .andWhere('gameId = :gameId', { gameId: params.gameId })
-        .execute();
-    }
+    return await this.assessmentGamesRepository
+      .createQueryBuilder()
+      .delete()
+      .from(AssessmentGames)
+      .where('assessmentId = :assessmentId', { assessmentId: assessmentId })
+      .andWhere('gameId = :gameId', { gameId: params.gameId })
+      .execute();
   }
 }
