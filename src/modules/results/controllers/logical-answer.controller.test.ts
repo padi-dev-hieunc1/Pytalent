@@ -53,7 +53,7 @@ describe('LogicalAnswersController unit', () => {
       const resultId = 1;
       const questionId = 2;
       const updateLogicalAnswerDto: UpdateLogicalAnswerDto = {
-        candidate_answer: 'No',
+        candidateAnswer: 'No',
       };
       const mockValidateLogicalAnswerResult = {
         checkResult: true,
@@ -123,7 +123,7 @@ describe('LogicalAnswersController unit', () => {
       const resultId = 1;
       const questionId = 2;
       const updateLogicalAnswerDto: UpdateLogicalAnswerDto = {
-        candidate_answer: 'No',
+        candidateAnswer: 'No',
       };
       const mockValidateLogicalAnswerResult = {
         checkResult: true,

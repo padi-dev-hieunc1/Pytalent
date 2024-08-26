@@ -83,7 +83,7 @@ describe('LogicalAnswersService unit', () => {
     it('should validate the logical answer correctly', async () => {
       const resultId = 1;
       const questionId = 1;
-      const params = { candidate_answer: 'Yes' };
+      const params = { candidateAnswer: 'Yes' };
       const mockLogicalQuestion = { id: questionId, result: 'Yes' };
       const mockLogicalAnswer = {
         id: 1,
@@ -117,7 +117,7 @@ describe('LogicalAnswersService unit', () => {
       expect(mockLogicalAnswersRepository.update).toHaveBeenCalledWith(
         mockLogicalAnswer.id,
         {
-          candidateAnswer: params.candidate_answer,
+          candidateAnswer: params.candidateAnswer,
           isCorrect: 1,
           status: AnswerStatusEnum.DONE,
         },
@@ -132,7 +132,7 @@ describe('LogicalAnswersService unit', () => {
 
       await expect(
         logicalAnswersService.validateLogicalAnswer(1, questionId, {
-          candidate_answer: 'Yes',
+          candidateAnswer: 'Yes',
         }),
       ).rejects.toThrow(CustomizeException);
 
@@ -161,7 +161,7 @@ describe('LogicalAnswersService unit', () => {
 
       await expect(
         logicalAnswersService.validateLogicalAnswer(resultId, questionId, {
-          candidate_answer: 'Yes',
+          candidateAnswer: 'Yes',
         }),
       ).rejects.toThrow(CustomizeException);
 

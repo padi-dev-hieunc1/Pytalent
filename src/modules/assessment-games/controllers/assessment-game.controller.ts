@@ -53,9 +53,9 @@ export class AssessmentGamesController extends BaseController {
           data: {
             newAssessmentGame,
             links: {
-              add_game_to_assessment: ADD_GAME_TO_ASSESSMENT,
-              get_games_in_assessment: GET_ALL_GAMES_IN_ASSESSMENT,
-              delete_game_in_assessment: DELETE_ASSESSMENT_GAME,
+              addGameToAssessment: ADD_GAME_TO_ASSESSMENT,
+              getGamesInAssessment: GET_ALL_GAMES_IN_ASSESSMENT,
+              deleteGameInAssessment: DELETE_ASSESSMENT_GAME,
             },
           },
           message: 'Add game to assessment success',
@@ -91,9 +91,9 @@ export class AssessmentGamesController extends BaseController {
           data: {
             games,
             links: {
-              add_game_to_assessment: ADD_GAME_TO_ASSESSMENT,
-              get_games_in_assessment: GET_ALL_GAMES_IN_ASSESSMENT,
-              delete_game_in_assessment: DELETE_ASSESSMENT_GAME,
+              addGameToAssessment: ADD_GAME_TO_ASSESSMENT,
+              getGamesInAssessment: GET_ALL_GAMES_IN_ASSESSMENT,
+              deleteGameInAssessment: DELETE_ASSESSMENT_GAME,
             },
           },
           message: 'success',
@@ -110,22 +110,23 @@ export class AssessmentGamesController extends BaseController {
     @Body() deleteAssessmentGameDto: DeleteAssessmentGameDto,
     @Res() res: Response,
   ) {
-    const delete_assessment_game =
+    const deleteAssessmentGame =
       await this.assessmentGameService.deleteAssessmentGame(
         assessmentId,
         deleteAssessmentGameDto,
       );
 
-    if (delete_assessment_game.affected) {
+    if (deleteAssessmentGame.affected) {
       await this.assessmentService.updateScoreAssessment(assessmentId);
 
       return this.successResponse(
         {
           data: {
+            deleted: true,
             links: {
-              add_game_to_assessment: ADD_GAME_TO_ASSESSMENT,
-              get_games_in_assessment: GET_ALL_GAMES_IN_ASSESSMENT,
-              delete_game_in_assessment: DELETE_ASSESSMENT_GAME,
+              addGameToAssessment: ADD_GAME_TO_ASSESSMENT,
+              getGamesInAssessment: GET_ALL_GAMES_IN_ASSESSMENT,
+              deleteGameInAssessment: DELETE_ASSESSMENT_GAME,
             },
           },
           message: 'delete success',

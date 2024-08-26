@@ -10,14 +10,12 @@ import {
 import { AnswerStatusEnum } from '@common/enum/answer-status.enum';
 import { LogicalAnswersRepository } from '../repositories/logical-answer.repository';
 import { LogicalQuestionsRepository } from '@modules/logical-questions/repositories/logical-question.repository';
-import { GameResultsService } from './result.service';
 
 @Injectable()
 export class LogicalAnswersService {
   constructor(
     private logicalAnswerRepository: LogicalAnswersRepository,
     private logicalQuestionRepository: LogicalQuestionsRepository,
-    private gameResultService: GameResultsService,
     private readonly i18n: I18nService,
   ) {}
   async createInitialLogicalAnswer(
@@ -51,13 +49,13 @@ export class LogicalAnswersService {
     );
 
     const checkCorrect =
-      params.candidate_answer === logicalQuestion.result ? 1 : 0;
-    const answerStatus = params.candidate_answer
+      params.candidateAnswer === logicalQuestion.result ? 1 : 0;
+    const answerStatus = params.candidateAnswer
       ? AnswerStatusEnum.DONE
       : AnswerStatusEnum.SKIP;
 
     const paramUpdate = plainToClass(LogicalAnswers, {
-      candidateAnswer: params.candidate_answer,
+      candidateAnswer: params.candidateAnswer,
       isCorrect: checkCorrect,
       status: answerStatus,
     });

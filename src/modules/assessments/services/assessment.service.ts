@@ -165,19 +165,18 @@ export class AssessmentsService {
   }
 
   async deleteAssessment(assessmentId: number) {
-    const existed_assessment =
+    const existedAssessment =
       await this.assessmentGameService.checkExistedAssessment(assessmentId);
 
-    if (existed_assessment) {
-      return await this.assessmentsRepository
-        .createQueryBuilder()
-        .delete()
-        .from(Assessments)
-        .where('id = :id', { id: assessmentId })
-        .execute();
-    } else {
+    if (!existedAssessment)
       throw new CustomizeException(this.i18n.t('message.ASSESSMENT_NOT_FOUND'));
-    }
+
+    return await this.assessmentsRepository
+      .createQueryBuilder()
+      .delete()
+      .from(Assessments)
+      .where('id = :id', { id: assessmentId })
+      .execute();
   }
 
   async inviteCandidates(params: CandidateAssessmentDto) {
@@ -272,7 +271,7 @@ export class AssessmentsService {
   }
 
   async createCandidateAssessment(params: CandidateAssessmentInterface) {
-    const candidate_assessment: CandidateAssessments =
+    const candidateAssessment: CandidateAssessments =
       await this.candidateAssessmentsRepository.findOne({
         where: {
           candidateId: params.candidateId,
@@ -280,7 +279,7 @@ export class AssessmentsService {
         },
       });
 
-    if (!candidate_assessment) {
+    if (!candidateAssessment) {
       const paramCreate: CandidateAssessmentInterface = plainToClass(
         CandidateAssessments,
         {
@@ -304,19 +303,19 @@ export class AssessmentsService {
       assessmentId,
     );
 
-    let max_score = 0;
+    let maxScore = 0;
     if (games) {
       for (const game of games) {
-        max_score += game.game.totalQuestionLevel;
+        maxScore += game.game.totalQuestionLevel;
       }
     }
-    const updated_assessment = plainToClass(Assessments, {
-      max_score: max_score,
+    const updatedAssessment = plainToClass(Assessments, {
+      maxScore: maxScore,
     });
 
     return await this.assessmentsRepository.update(
       assessmentId,
-      updated_assessment,
+      updatedAssessment,
     );
   }
 
@@ -332,13 +331,13 @@ export class AssessmentsService {
       const endTime = assessment.endTime;
 
       if (endTime.getTime() < currentTime.getTime()) {
-        const updated_assessment = plainToClass(Assessments, {
+        const updatedAssessment = plainToClass(Assessments, {
           status: AssessmentStatusEnum.EXPIRED,
         });
 
         await this.assessmentsRepository.update(
           assessmentId,
-          updated_assessment,
+          updatedAssessment,
         );
       }
     } else {
@@ -355,15 +354,14 @@ export class AssessmentsService {
       select: ['email', 'username'],
     });
 
-    if (candidate) {
-      return candidate;
-    } else {
+    if (!candidate)
       throw new CustomizeException(this.i18n.t('message.USER_NOT_FOUND'));
-    }
+
+    return candidate;
   }
 
   async updateCandidateAssessment(candidateId: number, assessmentId: number) {
-    const candidate_assessment =
+    const candidateAssessment =
       await this.candidateAssessmentsRepository.findOne({
         where: {
           candidateId: candidateId,
@@ -371,43 +369,42 @@ export class AssessmentsService {
         },
       });
 
-    if (candidate_assessment) {
-      const game_results = await this.gameResultRepository.find({
-        where: {
-          candidateId: candidateId,
-          assessmentId: assessmentId,
-        },
-      });
-
-      let all_completed = true;
-
-      for (const game_result of game_results) {
-        if (game_result.status !== GameResultStatusEnum.COMPLETED) {
-          all_completed = false;
-          break;
-        }
-      }
-
-      const new_status = all_completed
-        ? CandidateAssessmentStatusEnum.COMPLETED
-        : CandidateAssessmentStatusEnum.PROCESSING;
-
-      const paramUpdate = plainToClass(CandidateAssessments, {
-        status: new_status,
-      });
-
-      const updated = await this.candidateAssessmentsRepository.update(
-        candidate_assessment.id,
-        paramUpdate,
-      );
-
-      if (updated.affected === 1) return paramUpdate;
-      else return null;
-    } else {
+    if (!candidateAssessment)
       throw new CustomizeException(
         this.i18n.t('message.CANDIDATE_ASSESSMENT_NOT_FOUND'),
       );
+
+    const gameResults = await this.gameResultRepository.find({
+      where: {
+        candidateId: candidateId,
+        assessmentId: assessmentId,
+      },
+    });
+
+    let allCompleted = true;
+
+    for (const gameResult of gameResults) {
+      if (gameResult.status !== GameResultStatusEnum.COMPLETED) {
+        allCompleted = false;
+        break;
+      }
     }
+
+    const newStatus = allCompleted
+      ? CandidateAssessmentStatusEnum.COMPLETED
+      : CandidateAssessmentStatusEnum.PROCESSING;
+
+    const paramUpdate = plainToClass(CandidateAssessments, {
+      status: newStatus,
+    });
+
+    const updated = await this.candidateAssessmentsRepository.update(
+      candidateAssessment.id,
+      paramUpdate,
+    );
+
+    if (updated.affected === 1) return paramUpdate;
+    else return null;
   }
 
   async archiveAssessment(assessmentId: number) {
@@ -419,20 +416,19 @@ export class AssessmentsService {
 
     const archive = assessment.archive === 0 ? 1 : 0;
 
-    if (assessment) {
-      const paramUpdate = plainToClass(Assessments, {
-        archive: archive,
-      });
-
-      const updated = await this.assessmentsRepository.update(
-        assessmentId,
-        paramUpdate,
-      );
-
-      if (updated.affected === 1) return paramUpdate;
-      else return null;
-    } else {
+    if (!assessment)
       throw new CustomizeException(this.i18n.t('message.ASSESSMENT_NOT_FOUND'));
-    }
+
+    const paramUpdate = plainToClass(Assessments, {
+      archive: archive,
+    });
+
+    const updated = await this.assessmentsRepository.update(
+      assessmentId,
+      paramUpdate,
+    );
+
+    if (updated.affected === 1) return paramUpdate;
+    else return null;
   }
 }
