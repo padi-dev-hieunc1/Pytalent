@@ -52,12 +52,12 @@ export class LogicalAnswersService {
 
     const checkCorrect =
       params.candidateAnswer === logicalQuestion.result ? 1 : 0;
-    const answerStatus = params.candidateAnswer
+    const answerStatus = params.candidate_answer
       ? AnswerStatusEnum.DONE
       : AnswerStatusEnum.SKIP;
 
     const paramUpdate = plainToClass(LogicalAnswers, {
-      candidateAnswer: params.candidateAnswer,
+      candidateAnswer: params.candidate_answer,
       isCorrect: checkCorrect,
       status: answerStatus,
     });
