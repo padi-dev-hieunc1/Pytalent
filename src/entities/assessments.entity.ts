@@ -40,7 +40,9 @@ export class Assessments extends BaseEntity {
   })
   maxScore: number;
 
-  @Column()
+  @Column({
+    default: 0,
+  })
   archive: number;
 
   @Column()

@@ -39,8 +39,8 @@ export class LogicalQuestionsService {
       .createQueryBuilder('question')
       .select([
         'question.id',
-        'question.first_statement',
-        'question.second_statement',
+        'question.firstStatement',
+        'question.secondStatement',
         'question.conclusion',
       ])
       .distinct(true)
@@ -53,8 +53,8 @@ export class LogicalQuestionsService {
       .createQueryBuilder('question')
       .select([
         'question.id',
-        'question.first_statement',
-        'question.second_statement',
+        'question.firstStatement',
+        'question.secondStatement',
         'question.conclusion',
       ])
       .distinct(true)

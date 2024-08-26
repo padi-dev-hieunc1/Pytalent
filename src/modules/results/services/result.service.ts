@@ -21,6 +21,7 @@ import { LogicalAnswersRepository } from '../repositories/logical-answer.reposit
 import { LogicalQuestionsRepository } from '@modules/logical-questions/repositories/logical-question.repository';
 import { GameCategoryEnum } from '@common/enum/game-category.enum';
 import { AnswerStatusEnum } from '@common/enum/answer-status.enum';
+import { LogicalAnswers } from '@entities/logical-answers.entity';
 
 @Injectable()
 export class GameResultsService {

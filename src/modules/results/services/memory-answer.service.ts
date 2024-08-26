@@ -140,7 +140,7 @@ export class MemoryAnswersService {
 
     if (game_result) {
       const paramUpdate = plainToClass(GameResults, {
-        updated_at: new Date(),
+        updatedAt: new Date(),
       });
 
       const updated_game_result = await this.gameResultRepository.update(

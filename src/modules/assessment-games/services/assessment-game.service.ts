@@ -61,67 +61,60 @@ export class AssessmentGamesService {
   }
 
   async createAssessmentGame(params: CreateAssessmentGameInterface) {
-    let assessment_game: CreateAssessmentGameInterface;
+    let assessmentGame: CreateAssessmentGameInterface;
 
-    const existed_assessment = await this.checkExistedAssessment(
+    const existedAssessment = await this.checkExistedAssessment(
       params.assessmentId,
     );
 
-    const existed_game = await this.checkExistedGame(params.gameId);
+    const existedGame = await this.checkExistedGame(params.gameId);
 
-    if (!existed_assessment) {
+    if (!existedAssessment) {
       throw new CustomizeException(this.i18n.t('message.ASSESSMENT_NOT_FOUND'));
     }
 
-    if (!existed_game) {
+    if (!existedGame) {
       throw new CustomizeException(this.i18n.t('message.GAME_NOT_FOUND'));
     }
 
-    if (existed_assessment && existed_game) {
-      const existed_assessment_game: AssessmentGames =
-        await this.assessmentGamesRepository.findOne({
-          where: {
+    const existed_assessment_game: AssessmentGames =
+      await this.assessmentGamesRepository.findOne({
+        where: {
+          assessmentId: params.assessmentId,
+          gameId: params.gameId,
+        },
+      });
+
+    if (!existed_assessment_game) {
+      const assessment: Assessments = await this.assessmentsRepository.findOne({
+        where: {
+          id: params.assessmentId,
+        },
+        relations: ['hr'],
+      });
+
+      const check_permission = await this.checkPermissionGameOfHr(
+        assessment.hrId,
+        params.gameId,
+      );
+
+      if (check_permission) {
+        const paramCreate: CreateAssessmentGameInterface = plainToClass(
+          AssessmentGames,
+          {
             assessmentId: params.assessmentId,
             gameId: params.gameId,
           },
-        });
-
-      if (!existed_assessment_game) {
-        const assessment: Assessments =
-          await this.assessmentsRepository.findOne({
-            where: {
-              id: params.assessmentId,
-            },
-            relations: ['hr'],
-          });
-
-        const check_permission = await this.checkPermissionGameOfHr(
-          assessment.hrId,
-          params.gameId,
         );
 
-        if (check_permission) {
-          const paramCreate: CreateAssessmentGameInterface = plainToClass(
-            AssessmentGames,
-            {
-              assessmentId: params.assessmentId,
-              gameId: params.gameId,
-            },
-          );
+        assessmentGame = await this.assessmentGamesRepository.save(paramCreate);
 
-          assessment_game = await this.assessmentGamesRepository.save(
-            paramCreate,
-          );
-
-          return assessment_game;
-        } else {
-          throw new CustomizeException(
-            this.i18n.t('message.HR_GAME_NOT_FOUND'),
-          );
-        }
+        return assessmentGame;
       } else {
-        return null;
+        throw new CustomizeException(this.i18n.t('message.HR_GAME_NOT_FOUND'));
       }
+    } else {
+      return null;
     }
   }
 
