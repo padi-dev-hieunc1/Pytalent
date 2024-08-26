@@ -51,7 +51,7 @@ export class LogicalAnswersService {
     );
 
     const checkCorrect =
-      params.candidateAnswer === logicalQuestion.result ? 1 : 0;
+      params.candidate_answer === logicalQuestion.result ? 1 : 0;
     const answerStatus = params.candidate_answer
       ? AnswerStatusEnum.DONE
       : AnswerStatusEnum.SKIP;
