@@ -16,5 +16,5 @@ export class CreateGameResultDto {
   status: GameResultStatusEnum;
 
   @IsOptional()
-  current_question_level: number;
+  currentQuestionLevel: number;
 }

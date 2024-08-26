@@ -19,9 +19,7 @@ import { GameResults } from '@entities/games-results.entity';
 import { GameResultStatusEnum } from '@common/enum/game-result-status.enum';
 import { LogicalAnswersRepository } from '../repositories/logical-answer.repository';
 import { LogicalQuestionsRepository } from '@modules/logical-questions/repositories/logical-question.repository';
-import { GameCategoryEnum } from '@common/enum/game-category.enum';
 import { AnswerStatusEnum } from '@common/enum/answer-status.enum';
-import { LogicalAnswers } from '@entities/logical-answers.entity';
 
 @Injectable()
 export class GameResultsService {
@@ -182,14 +180,13 @@ export class GameResultsService {
       },
     });
 
-    if (assessment) {
-      if (assessment.archive === 1) {
-        throw new CustomizeException(
-          this.i18n.t('message.ASSESSMENT_ARCHIVED'),
-        );
-      }
-      return true;
-    } else return false;
+    if (!assessment) return false;
+
+    if (assessment?.archive === 1) {
+      throw new CustomizeException(this.i18n.t('message.ASSESSMENT_ARCHIVED'));
+    }
+
+    return true;
   }
 
   async createGameResults(params: CreateInitialGameResultInterface) {
@@ -210,56 +207,52 @@ export class GameResultsService {
     if (!existedAssessment)
       throw new CustomizeException(this.i18n.t('message.ASSESSMENT_NOT_FOUND'));
 
-    if (existedCandidate && existedGame && existedAssessment) {
-      const existedGameResult: GameResults =
-        await this.gameResultRepository.findOne({
-          where: {
-            candidateId: params.candidateId,
-            gameId: params.gameId,
-            assessmentId: params.assessmentId,
-          },
-        });
+    const existedGameResult: GameResults =
+      await this.gameResultRepository.findOne({
+        where: {
+          candidateId: params.candidateId,
+          gameId: params.gameId,
+          assessmentId: params.assessmentId,
+        },
+      });
 
-      if (existedGameResult) {
-        if (existedGameResult.status === GameResultStatusEnum.NOT_COMPLETED) {
-          return existedGameResult;
-        } else {
-          // Game completed, catch error
-          throw new CustomizeException(this.i18n.t('message.GAME_PLAY_ONCE'));
-        }
-      } else {
-        // check start time to play game
-        const current_time = new Date();
-        const assessment = await this.assessmentsRepository.findOne({
-          where: {
-            id: params.assessmentId,
-          },
-        });
-
-        const start_time = assessment.startTime;
-
-        if (start_time.getTime() > current_time.getTime()) {
-          throw new CustomizeException(
-            this.i18n.t('message.ASSESSMENT_NOT_START'),
-          );
-        } else {
-          const paramCreate: CreateInitialGameResultInterface = plainToClass(
-            GameResults,
-            {
-              assessmentId: params.assessmentId,
-              gameId: params.gameId,
-              candidateId: params.candidateId,
-              status: GameResultStatusEnum.NOT_COMPLETED,
-              currentQuestionLevel: 1,
-            },
-          );
-
-          const gameResult = await this.gameResultRepository.save(paramCreate);
-
-          return gameResult;
-        }
-      }
+    if (existedGameResult?.status === GameResultStatusEnum.NOT_COMPLETED) {
+      return existedGameResult;
     }
+
+    if (existedGameResult?.status === GameResultStatusEnum.COMPLETED) {
+      // Game completed, throw exception
+      throw new CustomizeException(this.i18n.t('message.GAME_PLAY_ONCE'));
+    }
+
+    // check start time to play game
+    const currentTime = new Date();
+    const assessment = await this.assessmentsRepository.findOne({
+      where: {
+        id: params.assessmentId,
+      },
+    });
+
+    const startTime = assessment.startTime;
+
+    if (startTime.getTime() > currentTime.getTime()) {
+      throw new CustomizeException(this.i18n.t('message.ASSESSMENT_NOT_START'));
+    }
+
+    const paramCreate: CreateInitialGameResultInterface = plainToClass(
+      GameResults,
+      {
+        assessmentId: params.assessmentId,
+        gameId: params.gameId,
+        candidateId: params.candidateId,
+        status: GameResultStatusEnum.NOT_COMPLETED,
+        currentQuestionLevel: 1,
+      },
+    );
+
+    const gameResult = await this.gameResultRepository.save(paramCreate);
+
+    return gameResult;
   }
 
   async findNextQuestion(resultId: number) {
@@ -296,24 +289,23 @@ export class GameResultsService {
 
     const resultId = gameResult.id;
 
-    if (gameResult) {
-      const paramUpdate = plainToClass(GameResults, {
-        updatedAt: new Date(),
-      });
-
-      const updated_game_result = await this.gameResultRepository.update(
-        resultId,
-        paramUpdate,
-      );
-
-      if (updated_game_result.affected === 1) {
-        return await this.findNextQuestion(resultId);
-      } else {
-        return null;
-      }
-    } else {
+    if (!gameResult)
       throw new CustomizeException(this.i18n.t('message.RESULT_NOT_FOUND'));
+
+    const paramUpdate = plainToClass(GameResults, {
+      updatedAt: new Date(),
+    });
+
+    const updatedGameResult = await this.gameResultRepository.update(
+      resultId,
+      paramUpdate,
+    );
+
+    if (updatedGameResult.affected === 1) {
+      return await this.findNextQuestion(resultId);
     }
+
+    return null;
   }
 
   async updateGameResultStatus(resultId: number) {

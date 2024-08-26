@@ -5,14 +5,14 @@ export interface CreateInitialGameResultInterface {
   gameId: number;
   candidateId: number;
   status?: GameResultStatusEnum;
-  current_question_level?: number;
+  currentQuestionLevel?: number;
 }
 
 export interface UpdateGameResultInterface {
   status?: GameResultStatusEnum;
-  complete_question?: number;
-  complete_time?: number;
-  current_question_level?: number;
+  completeQuestion?: number;
+  completeTime?: number;
+  currentQuestionLevel?: number;
   score?: number;
 }
 
