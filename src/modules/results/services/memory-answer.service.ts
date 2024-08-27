@@ -19,7 +19,7 @@ export class MemoryAnswersService {
     private gameResultRepository: GameResultsRepository,
     private readonly i18n: I18nService,
   ) {}
-  async createMemoryAnswer(resultId: number, level: number) {
+  async createRandomMemoryAnswer(resultId: number, level: number) {
     const gameResult = await this.gameResultService.getDetailGameResult(
       resultId,
     );
@@ -48,7 +48,7 @@ export class MemoryAnswersService {
     }
   }
 
-  randomMemoryTitle(level: number) {
+  private randomMemoryTitle(level: number) {
     const words = ['left', 'right'];
     let title = '';
 
@@ -138,28 +138,28 @@ export class MemoryAnswersService {
     const resultId = gameResult.id;
     const currentLevel = gameResult.currentQuestionLevel;
 
-    if (gameResult) {
-      const paramUpdate = plainToClass(GameResults, {
-        updatedAt: new Date(),
-      });
-
-      const updatedGameResult = await this.gameResultRepository.update(
-        resultId,
-        paramUpdate,
-      );
-
-      if (updatedGameResult.affected === 1) {
-        const nextLevel = await this.getDetailMemoryAnswer(
-          resultId,
-          currentLevel,
-        );
-
-        return nextLevel;
-      } else {
-        return null;
-      }
-    } else {
+    if (!gameResult) {
       throw new CustomizeException(this.i18n.t('message.RESULT_NOT_FOUND'));
     }
+
+    const paramUpdate = plainToClass(GameResults, {
+      updatedAt: new Date(),
+    });
+
+    const updatedGameResult = await this.gameResultRepository.update(
+      resultId,
+      paramUpdate,
+    );
+
+    if (updatedGameResult.affected === 1) {
+      const nextLevel = await this.getDetailMemoryAnswer(
+        resultId,
+        currentLevel,
+      );
+
+      return nextLevel;
+    }
+
+    throw new CustomizeException('Can not continue this memory game');
   }
 }

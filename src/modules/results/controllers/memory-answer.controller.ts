@@ -73,7 +73,7 @@ export class MemoryAnswersController extends BaseController {
         );
       } else {
         const nextMemoryQuestion =
-          await this.memoryAnswerService.createMemoryAnswer(
+          await this.memoryAnswerService.createRandomMemoryAnswer(
             resultId,
             level + 1,
           );

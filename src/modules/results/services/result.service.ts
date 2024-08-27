@@ -20,6 +20,8 @@ import { GameResultStatusEnum } from '@common/enum/game-result-status.enum';
 import { LogicalAnswersRepository } from '../repositories/logical-answer.repository';
 import { LogicalQuestionsRepository } from '@modules/logical-questions/repositories/logical-question.repository';
 import { AnswerStatusEnum } from '@common/enum/answer-status.enum';
+import { LogicalQuestionsService } from '@modules/logical-questions/service/logical-question.service';
+import { LogicalAnswersService } from './logical-answer.service';
 
 @Injectable()
 export class GameResultsService {
@@ -30,6 +32,8 @@ export class GameResultsService {
     private gamesRepository: GamesRepository,
     private logicalAnswerRepository: LogicalAnswersRepository,
     private logicalQuestionRepository: LogicalQuestionsRepository,
+    private logicalQuestionService: LogicalQuestionsService,
+    private logicalAnswerService: LogicalAnswersService,
     private readonly i18n: I18nService,
   ) {}
 
@@ -308,7 +312,7 @@ export class GameResultsService {
       return await this.findNextQuestion(resultId);
     }
 
-    return null;
+    throw new CustomizeException('Can not continue this logical game');
   }
 
   async updateGameResultStatus(resultId: number) {
@@ -321,6 +325,10 @@ export class GameResultsService {
 
   async getAllResults() {
     const allResults = await this.gameResultRepository.find({});
+
+    if (allResults.length === 0) {
+      throw new CustomizeException('There are not any game results');
+    }
 
     return allResults;
   }
@@ -345,7 +353,7 @@ export class GameResultsService {
       return paramUpdate;
     }
 
-    return null;
+    throw new CustomizeException('Update game result failed');
   }
 
   async isLastLogicalQuestion(resultId: number) {
@@ -353,5 +361,24 @@ export class GameResultsService {
 
     if (result.currentQuestionLevel < 20) return false;
     return true;
+  }
+
+  async getListRandomLogicalQuestions(newGameResult: GameResults) {
+    const listRandomLogicalQuestions =
+      await this.logicalQuestionService.randomLogicalQuestions();
+
+    for (const randomQuestion of listRandomLogicalQuestions) {
+      const initialLogicalAnswer = {
+        resultId: newGameResult.id,
+        questionId: randomQuestion.id,
+        status: AnswerStatusEnum.NOT_DONE,
+      };
+
+      await this.logicalAnswerService.createInitialLogicalAnswer(
+        initialLogicalAnswer,
+      );
+    }
+
+    return listRandomLogicalQuestions;
   }
 }
