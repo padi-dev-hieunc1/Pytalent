@@ -2,12 +2,11 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { LogicalAnswersService } from './logical-answer.service';
 import { LogicalAnswersRepository } from '../repositories/logical-answer.repository';
 import { LogicalQuestionsRepository } from '@modules/logical-questions/repositories/logical-question.repository';
-import { GameResultsService } from './result.service';
 import { I18nService } from 'nestjs-i18n';
 import { CustomizeException } from '@exception/customize.exception';
 import { AnswerStatusEnum } from '@common/enum/answer-status.enum';
 
-describe('LogicalAnswersService unit', () => {
+describe('LogicalAnswersService', () => {
   let logicalAnswersService: LogicalAnswersService;
 
   const mockLogicalAnswersRepository = {
@@ -19,8 +18,6 @@ describe('LogicalAnswersService unit', () => {
   const mockLogicalQuestionsRepository = {
     findOne: jest.fn(),
   };
-
-  const mockGameResultsService = {};
 
   const mockI18nService = {
     t: jest.fn((key: string) => key),
@@ -37,10 +34,6 @@ describe('LogicalAnswersService unit', () => {
         {
           provide: LogicalQuestionsRepository,
           useValue: mockLogicalQuestionsRepository,
-        },
-        {
-          provide: GameResultsService,
-          useValue: mockGameResultsService,
         },
         {
           provide: I18nService,
@@ -69,34 +62,26 @@ describe('LogicalAnswersService unit', () => {
         mockAnswer,
       );
 
-      expect(mockLogicalAnswersRepository.save).toHaveBeenCalledWith({
-        questionId: mockParams.questionId,
-        resultId: mockParams.resultId,
-        status: AnswerStatusEnum.NOT_DONE,
-      });
+      expect(mockLogicalAnswersRepository.save).toHaveBeenCalledWith(
+        expect.objectContaining({
+          questionId: mockParams.questionId,
+          resultId: mockParams.resultId,
+          status: AnswerStatusEnum.NOT_DONE,
+        }),
+      );
 
       expect(result).toEqual(mockAnswer);
     });
   });
 
-  describe('validateLogicalAnswer', () => {
-    it('should validate the logical answer correctly', async () => {
-      const resultId = 1;
+  describe('isLogicalAnswerCorrect', () => {
+    it('should return true if the logical answer is correct', async () => {
       const questionId = 1;
       const params = { candidateAnswer: 'Yes' };
       const mockLogicalQuestion = { id: questionId, result: 'Yes' };
-      const mockLogicalAnswer = {
-        id: 1,
-        questionId,
-        resultId,
-        candidateAnswer: null,
-      };
 
       mockLogicalQuestionsRepository.findOne.mockResolvedValueOnce(
         mockLogicalQuestion,
-      );
-      mockLogicalAnswersRepository.findOne.mockResolvedValueOnce(
-        mockLogicalAnswer,
       );
 
       const result = await logicalAnswersService.isLogicalAnswerCorrect(
@@ -107,21 +92,24 @@ describe('LogicalAnswersService unit', () => {
       expect(mockLogicalQuestionsRepository.findOne).toHaveBeenCalledWith({
         where: { id: questionId },
       });
-      expect(mockLogicalAnswersRepository.findOne).toHaveBeenCalledWith({
-        where: {
-          questionId,
-          resultId,
-        },
-      });
-      expect(mockLogicalAnswersRepository.update).toHaveBeenCalledWith(
-        mockLogicalAnswer.id,
-        {
-          candidateAnswer: params.candidateAnswer,
-          isCorrect: 1,
-          status: AnswerStatusEnum.DONE,
-        },
-      );
       expect(result).toEqual({ checkResult: true });
+    });
+
+    it('should return false if the logical answer is incorrect', async () => {
+      const questionId = 1;
+      const params = { candidateAnswer: 'No' };
+      const mockLogicalQuestion = { id: questionId, result: 'Yes' };
+
+      mockLogicalQuestionsRepository.findOne.mockResolvedValueOnce(
+        mockLogicalQuestion,
+      );
+
+      const result = await logicalAnswersService.isLogicalAnswerCorrect(
+        questionId,
+        params,
+      );
+
+      expect(result).toEqual({ checkResult: false });
     });
 
     it('should throw an exception if logical question is not found', async () => {
@@ -139,11 +127,50 @@ describe('LogicalAnswersService unit', () => {
         'message.LOGICAL_QUESTION_NOT_FOUND',
       );
     });
+  });
+
+  describe('saveLogicalAnswer', () => {
+    it('should update the logical answer correctly', async () => {
+      const resultId = 1;
+      const questionId = 1;
+      const params = { candidateAnswer: 'Yes' };
+      const mockLogicalAnswer = {
+        id: 1,
+        questionId,
+        resultId,
+        candidateAnswer: null,
+      };
+      const checkResult = true;
+
+      mockLogicalAnswersRepository.findOne.mockResolvedValueOnce(
+        mockLogicalAnswer,
+      );
+
+      await logicalAnswersService.saveLogicalAnswer(
+        resultId,
+        questionId,
+        params,
+        checkResult,
+      );
+
+      expect(mockLogicalAnswersRepository.findOne).toHaveBeenCalledWith({
+        where: { questionId, resultId },
+      });
+
+      expect(mockLogicalAnswersRepository.update).toHaveBeenCalledWith(
+        mockLogicalAnswer.id,
+        expect.objectContaining({
+          candidateAnswer: params.candidateAnswer,
+          isCorrect: checkResult,
+          status: AnswerStatusEnum.DONE,
+        }),
+      );
+    });
 
     it('should throw an exception if logical answer is already done', async () => {
-      const questionId = 1;
       const resultId = 1;
-      const mockLogicalQuestion = { id: questionId, result: 'Yes' };
+      const questionId = 1;
+      const params = { candidateAnswer: 'Yes' };
       const mockLogicalAnswer = {
         id: 1,
         questionId,
@@ -151,17 +178,17 @@ describe('LogicalAnswersService unit', () => {
         candidateAnswer: 'Yes',
       };
 
-      mockLogicalQuestionsRepository.findOne.mockResolvedValueOnce(
-        mockLogicalQuestion,
-      );
       mockLogicalAnswersRepository.findOne.mockResolvedValueOnce(
         mockLogicalAnswer,
       );
 
       await expect(
-        logicalAnswersService.isLogicalAnswerCorrect(questionId, {
-          candidateAnswer: 'Yes',
-        }),
+        logicalAnswersService.saveLogicalAnswer(
+          resultId,
+          questionId,
+          params,
+          true,
+        ),
       ).rejects.toThrow(CustomizeException);
 
       expect(mockI18nService.t).toHaveBeenCalledWith(
