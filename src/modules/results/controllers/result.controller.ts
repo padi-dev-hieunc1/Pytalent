@@ -16,7 +16,6 @@ import { RoleEnum } from '@enum/role.enum';
 import { CreateGameResultDto } from '../dto/create-game-result.dto';
 import { GameResultsService } from '../services/result.service';
 import { LogicalAnswersService } from '../services/logical-answer.service';
-import { AnswerStatusEnum } from '@common/enum/answer-status.enum';
 import { ContinueGameResultDto } from '../dto/continue-game-result.dto';
 import { LogicalQuestionsService } from '@modules/logical-questions/service/logical-question.service';
 import { GameCategoryEnum } from '@common/enum/game-category.enum';
@@ -27,10 +26,9 @@ import { MemoryAnswersService } from '../services/memory-answer.service';
 export class GameResultsController extends BaseController {
   constructor(
     private readonly gameResultService: GameResultsService,
-    private logicalAnswerService: LogicalAnswersService,
     private readonly memoryAnswerService: MemoryAnswersService,
-    private logicalQuestionService: LogicalQuestionsService,
-    private gameService: GamesService,
+    private readonly logicalQuestionService: LogicalQuestionsService,
+    private readonly gameService: GamesService,
   ) {
     super();
   }
@@ -55,9 +53,12 @@ export class GameResultsController extends BaseController {
       newGameResult?.currentQuestionLevel === 1
     ) {
       const listRandomLogicalQuestions =
-        await this.gameResultService.getListRandomLogicalQuestions(
-          newGameResult,
-        );
+        await this.logicalQuestionService.randomLogicalQuestions();
+
+      await this.gameResultService.saveLogicalAnswers(
+        newGameResult,
+        listRandomLogicalQuestions,
+      );
 
       return this.successResponse(
         {
@@ -65,7 +66,7 @@ export class GameResultsController extends BaseController {
             question: listRandomLogicalQuestions[0],
             resultId: newGameResult.id,
           },
-          message: 'Start playing game',
+          message: 'Start playing logical game',
         },
         res,
       );
@@ -108,7 +109,7 @@ export class GameResultsController extends BaseController {
             timeLimit: randomMemoryQuestion.timeLimit,
             resultId: newGameResult.id,
           },
-          message: 'Start playing game',
+          message: 'Start playing memory game',
         },
         res,
       );

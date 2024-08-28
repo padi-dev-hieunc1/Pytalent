@@ -49,7 +49,9 @@ export class MemoryAnswersController extends BaseController {
         },
         res,
       );
-    } else if (
+    }
+
+    if (
       memoryAnswer.status === AnswerStatusEnum.DONE &&
       memoryAnswer.isCorrect === 1
     ) {
@@ -89,23 +91,23 @@ export class MemoryAnswersController extends BaseController {
           res,
         );
       }
-    } else {
-      return this.successResponse(
-        {
-          data: {
-            check: true,
-            question: {
-              id: memoryAnswer.id,
-              level: memoryAnswer.level,
-              status: memoryAnswer.status,
-              candidateAnswer: memoryAnswer.candidateAnswer,
-              resultId: memoryAnswer.resultId,
-            },
-          },
-          message: 'Continue this level',
-        },
-        res,
-      );
     }
+
+    return this.successResponse(
+      {
+        data: {
+          check: true,
+          question: {
+            id: memoryAnswer.id,
+            level: memoryAnswer.level,
+            status: memoryAnswer.status,
+            candidateAnswer: memoryAnswer.candidateAnswer,
+            resultId: memoryAnswer.resultId,
+          },
+        },
+        message: 'Continue this level',
+      },
+      res,
+    );
   }
 }

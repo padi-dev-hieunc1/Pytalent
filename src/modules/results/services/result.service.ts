@@ -22,6 +22,7 @@ import { LogicalQuestionsRepository } from '@modules/logical-questions/repositor
 import { AnswerStatusEnum } from '@common/enum/answer-status.enum';
 import { LogicalQuestionsService } from '@modules/logical-questions/service/logical-question.service';
 import { LogicalAnswersService } from './logical-answer.service';
+import { LogicalQuestions } from '@entities/logical-questions.entity';
 
 @Injectable()
 export class GameResultsService {
@@ -363,10 +364,10 @@ export class GameResultsService {
     return true;
   }
 
-  async getListRandomLogicalQuestions(newGameResult: GameResults) {
-    const listRandomLogicalQuestions =
-      await this.logicalQuestionService.randomLogicalQuestions();
-
+  async saveLogicalAnswers(
+    newGameResult: GameResults,
+    listRandomLogicalQuestions: LogicalQuestions[],
+  ) {
     for (const randomQuestion of listRandomLogicalQuestions) {
       const initialLogicalAnswer = {
         resultId: newGameResult.id,
@@ -378,7 +379,5 @@ export class GameResultsService {
         initialLogicalAnswer,
       );
     }
-
-    return listRandomLogicalQuestions;
   }
 }
