@@ -32,64 +32,7 @@ export class MemoryAnswersController extends BaseController {
       updateMemoryAnswer,
     );
 
-    if (
-      memoryAnswer.status === AnswerStatusEnum.DONE &&
-      memoryAnswer.isCorrect === 0
-    ) {
-      const gameResult = await this.gameResultService.getDetailGameResult(
-        resultId,
-      );
-
-      return this.successResponse(
-        {
-          data: {
-            gameResult: gameResult,
-          },
-          message: 'End game',
-        },
-        res,
-      );
-    } else if (
-      memoryAnswer.status === AnswerStatusEnum.DONE &&
-      memoryAnswer.isCorrect === 1
-    ) {
-      await this.gameResultService.updateMemoryGameResult(resultId);
-
-      if (level === 25) {
-        await this.gameResultService.updateGameResultStatus(resultId);
-
-        const gameResult = await this.gameResultService.getDetailGameResult(
-          resultId,
-        );
-
-        return this.successResponse(
-          {
-            data: {
-              gameResult: gameResult,
-            },
-            message: 'End game',
-          },
-          res,
-        );
-      } else {
-        const nextMemoryQuestion =
-          await this.memoryAnswerService.createMemoryAnswer(
-            resultId,
-            level + 1,
-          );
-
-        return this.successResponse(
-          {
-            data: {
-              check: true,
-              question: nextMemoryQuestion,
-            },
-            message: 'Complete previous level',
-          },
-          res,
-        );
-      }
-    } else {
+    if (memoryAnswer.status !== AnswerStatusEnum.DONE) {
       return this.successResponse(
         {
           data: {
@@ -107,5 +50,58 @@ export class MemoryAnswersController extends BaseController {
         res,
       );
     }
+
+    if (memoryAnswer.isCorrect === 0) {
+      const gameResult = await this.gameResultService.getDetailGameResult(
+        resultId,
+      );
+
+      return this.successResponse(
+        {
+          data: {
+            gameResult: gameResult,
+          },
+          message: 'End game',
+        },
+        res,
+      );
+    }
+
+    await this.gameResultService.updateMemoryGameResult(resultId);
+
+    if (level === 25) {
+      await this.gameResultService.updateGameResultStatus(resultId);
+
+      const gameResult = await this.gameResultService.getDetailGameResult(
+        resultId,
+      );
+
+      return this.successResponse(
+        {
+          data: {
+            gameResult: gameResult,
+          },
+          message: 'End game',
+        },
+        res,
+      );
+    }
+
+    const nextMemoryQuestion =
+      await this.memoryAnswerService.createRandomMemoryAnswer(
+        resultId,
+        level + 1,
+      );
+
+    return this.successResponse(
+      {
+        data: {
+          check: true,
+          question: nextMemoryQuestion,
+        },
+        message: 'Complete previous level',
+      },
+      res,
+    );
   }
 }
