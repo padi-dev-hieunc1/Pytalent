@@ -144,10 +144,13 @@ export class GameResultsService {
       result.completeTime === 90 ||
       result.status === GameResultStatusEnum.COMPLETED
     ) {
-      throw new CustomizeException('Game finished');
+      return {
+        status: false,
+        message: 'Game Finished',
+      };
     }
 
-    return;
+    return { status: true };
   }
 
   async checkExistedCandidate(candidateId: number) {
@@ -345,10 +348,10 @@ export class GameResultsService {
     return null;
   }
 
-  // async isLastLogicalQuestion(resultId: number) {
-  //   const result = await this.getGameResult(resultId);
+  async isLastLogicalQuestion(resultId: number) {
+    const result = await this.getGameResult(resultId);
 
-  //   if (result.currentQuestionLevel >= 20) return false;
-  //   return true;
-  // }
+    if (result.currentQuestionLevel < 20) return false;
+    return true;
+  }
 }

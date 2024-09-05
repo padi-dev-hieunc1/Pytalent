@@ -26,27 +26,42 @@ export class LogicalAnswersController extends BaseController {
     @Res() res: Response,
   ) {
     // game ended -> can not answer
-    await this.gameResultService.validateGameResult(resultId);
+    const validateGameResult = await this.gameResultService.validateGameResult(
+      resultId,
+    );
 
-    // check logical answer
-    const validateLogicalAnswer =
-      await this.logicalAnswerService.validateLogicalAnswer(
-        resultId,
+    if (!validateGameResult.status) {
+      return this.successResponse(
+        {
+          message: validateGameResult.message,
+        },
+        res,
+      );
+    }
+
+    // check logical answer correct or not
+    const isLogicalAnswerCorrect =
+      await this.logicalAnswerService.isLogicalAnswerCorrect(
         questionId,
         updateLogicalAnswerDto,
       );
 
+    await this.logicalAnswerService.saveLogicalAnswer(
+      resultId,
+      questionId,
+      updateLogicalAnswerDto,
+      isLogicalAnswerCorrect.checkResult,
+    );
+
     await this.gameResultService.updateLogicalGameResult(
       resultId,
-      validateLogicalAnswer.checkResult,
+      isLogicalAnswerCorrect.checkResult,
     );
 
-    // If do not have next question -> last question
-    const nextLogicalQuestion = await this.gameResultService.findNextQuestion(
-      resultId,
-    );
+    const isLastLogicalQuestion =
+      await this.gameResultService.isLastLogicalQuestion(resultId);
 
-    if (!nextLogicalQuestion) {
+    if (isLastLogicalQuestion) {
       return this.successResponse(
         {
           message: 'Complete logical game',
@@ -55,10 +70,14 @@ export class LogicalAnswersController extends BaseController {
       );
     }
 
+    const nextLogicalQuestion = await this.gameResultService.findNextQuestion(
+      resultId,
+    );
+
     return this.successResponse(
       {
         data: {
-          checkResult: validateLogicalAnswer.checkResult,
+          checkResult: isLogicalAnswerCorrect.checkResult,
           nextQuestion: nextLogicalQuestion,
         },
         message: 'Complete answer logical question',

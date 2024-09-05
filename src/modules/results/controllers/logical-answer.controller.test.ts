@@ -10,12 +10,14 @@ describe('LogicalAnswersController unit', () => {
   let res: Response;
 
   const mockLogicalAnswersService = {
-    validateLogicalAnswer: jest.fn(),
+    isLogicalAnswerCorrect: jest.fn(),
+    saveLogicalAnswer: jest.fn(),
   };
 
   const mockGameResultsService = {
     validateGameResult: jest.fn(),
     updateLogicalGameResult: jest.fn(),
+    isLastLogicalQuestion: jest.fn(),
     findNextQuestion: jest.fn(),
   };
 
@@ -44,6 +46,10 @@ describe('LogicalAnswersController unit', () => {
     } as unknown as Response;
   });
 
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
   describe('answerLogicalQuestion', () => {
     it('should be defined', () => {
       expect(logicalAnswersController).toBeDefined();
@@ -55,9 +61,7 @@ describe('LogicalAnswersController unit', () => {
       const updateLogicalAnswerDto: UpdateLogicalAnswerDto = {
         candidateAnswer: 'No',
       };
-      const mockValidateLogicalAnswerResult = {
-        checkResult: true,
-      };
+      const mockIsLogicalAnswerCorrect = { checkResult: true };
       const mockNextQuestion = {
         question: {
           id: 9,
@@ -67,15 +71,20 @@ describe('LogicalAnswersController unit', () => {
         },
       };
 
-      mockGameResultsService.validateGameResult.mockResolvedValueOnce(
-        undefined,
+      mockGameResultsService.validateGameResult.mockResolvedValueOnce({
+        status: true,
+        message: 'Valid game result',
+      });
+      mockLogicalAnswersService.isLogicalAnswerCorrect.mockResolvedValueOnce(
+        mockIsLogicalAnswerCorrect,
       );
-      mockLogicalAnswersService.validateLogicalAnswer.mockResolvedValueOnce(
-        mockValidateLogicalAnswerResult,
+      mockLogicalAnswersService.saveLogicalAnswer.mockResolvedValueOnce(
+        undefined,
       );
       mockGameResultsService.updateLogicalGameResult.mockResolvedValueOnce(
         undefined,
       );
+      mockGameResultsService.isLastLogicalQuestion.mockResolvedValueOnce(false);
       mockGameResultsService.findNextQuestion.mockResolvedValueOnce(
         mockNextQuestion,
       );
@@ -96,13 +105,19 @@ describe('LogicalAnswersController unit', () => {
         resultId,
       );
       expect(
-        mockLogicalAnswersService.validateLogicalAnswer,
-      ).toHaveBeenCalledWith(resultId, questionId, updateLogicalAnswerDto);
+        mockLogicalAnswersService.isLogicalAnswerCorrect,
+      ).toHaveBeenCalledWith(questionId, updateLogicalAnswerDto);
+      expect(mockLogicalAnswersService.saveLogicalAnswer).toHaveBeenCalledWith(
+        resultId,
+        questionId,
+        updateLogicalAnswerDto,
+        mockIsLogicalAnswerCorrect.checkResult,
+      );
       expect(
         mockGameResultsService.updateLogicalGameResult,
-      ).toHaveBeenCalledWith(
+      ).toHaveBeenCalledWith(resultId, mockIsLogicalAnswerCorrect.checkResult);
+      expect(mockGameResultsService.isLastLogicalQuestion).toHaveBeenCalledWith(
         resultId,
-        mockValidateLogicalAnswerResult.checkResult,
       );
       expect(mockGameResultsService.findNextQuestion).toHaveBeenCalledWith(
         resultId,
@@ -110,7 +125,7 @@ describe('LogicalAnswersController unit', () => {
       expect(successResponse).toHaveBeenCalledWith(
         {
           data: {
-            checkResult: mockValidateLogicalAnswerResult.checkResult,
+            checkResult: mockIsLogicalAnswerCorrect.checkResult,
             nextQuestion: mockNextQuestion,
           },
           message: 'Complete answer logical question',
@@ -125,20 +140,22 @@ describe('LogicalAnswersController unit', () => {
       const updateLogicalAnswerDto: UpdateLogicalAnswerDto = {
         candidateAnswer: 'No',
       };
-      const mockValidateLogicalAnswerResult = {
-        checkResult: true,
-      };
+      const mockIsLogicalAnswerCorrect = { checkResult: true };
 
-      mockGameResultsService.validateGameResult.mockResolvedValueOnce(
-        undefined,
+      mockGameResultsService.validateGameResult.mockResolvedValueOnce({
+        status: true,
+        message: 'Valid game result',
+      });
+      mockLogicalAnswersService.isLogicalAnswerCorrect.mockResolvedValueOnce(
+        mockIsLogicalAnswerCorrect,
       );
-      mockLogicalAnswersService.validateLogicalAnswer.mockResolvedValueOnce(
-        mockValidateLogicalAnswerResult,
+      mockLogicalAnswersService.saveLogicalAnswer.mockResolvedValueOnce(
+        undefined,
       );
       mockGameResultsService.updateLogicalGameResult.mockResolvedValueOnce(
         undefined,
       );
-      mockGameResultsService.findNextQuestion.mockResolvedValueOnce(null);
+      mockGameResultsService.isLastLogicalQuestion.mockResolvedValueOnce(true);
 
       const successResponse = jest.spyOn(
         logicalAnswersController,
@@ -156,15 +173,18 @@ describe('LogicalAnswersController unit', () => {
         resultId,
       );
       expect(
-        mockLogicalAnswersService.validateLogicalAnswer,
-      ).toHaveBeenCalledWith(resultId, questionId, updateLogicalAnswerDto);
+        mockLogicalAnswersService.isLogicalAnswerCorrect,
+      ).toHaveBeenCalledWith(questionId, updateLogicalAnswerDto);
+      expect(mockLogicalAnswersService.saveLogicalAnswer).toHaveBeenCalledWith(
+        resultId,
+        questionId,
+        updateLogicalAnswerDto,
+        mockIsLogicalAnswerCorrect.checkResult,
+      );
       expect(
         mockGameResultsService.updateLogicalGameResult,
-      ).toHaveBeenCalledWith(
-        resultId,
-        mockValidateLogicalAnswerResult.checkResult,
-      );
-      expect(mockGameResultsService.findNextQuestion).toHaveBeenCalledWith(
+      ).toHaveBeenCalledWith(resultId, mockIsLogicalAnswerCorrect.checkResult);
+      expect(mockGameResultsService.isLastLogicalQuestion).toHaveBeenCalledWith(
         resultId,
       );
       expect(successResponse).toHaveBeenCalledWith(
@@ -173,6 +193,53 @@ describe('LogicalAnswersController unit', () => {
         },
         res,
       );
+    });
+
+    it('should handle game result validation failure', async () => {
+      const resultId = 1;
+      const questionId = 2;
+      const updateLogicalAnswerDto: UpdateLogicalAnswerDto = {
+        candidateAnswer: 'No',
+      };
+
+      mockGameResultsService.validateGameResult.mockResolvedValueOnce({
+        status: false,
+        message: 'Game Finished',
+      });
+
+      const successResponse = jest.spyOn(
+        logicalAnswersController,
+        'successResponse',
+      );
+
+      await logicalAnswersController.answerLogicalQuestion(
+        resultId,
+        questionId,
+        updateLogicalAnswerDto,
+        res,
+      );
+
+      expect(mockGameResultsService.validateGameResult).toHaveBeenCalledWith(
+        resultId,
+      );
+      expect(successResponse).toHaveBeenCalledWith(
+        {
+          message: 'Game Finished',
+        },
+        res,
+      );
+      expect(
+        mockLogicalAnswersService.isLogicalAnswerCorrect,
+      ).not.toHaveBeenCalled();
+      expect(
+        mockLogicalAnswersService.saveLogicalAnswer,
+      ).not.toHaveBeenCalled();
+      expect(
+        mockGameResultsService.updateLogicalGameResult,
+      ).not.toHaveBeenCalled();
+      expect(
+        mockGameResultsService.isLastLogicalQuestion,
+      ).not.toHaveBeenCalled();
     });
   });
 });

@@ -37,33 +37,14 @@ export class LogicalAnswersService {
     return initialLogicalAnswer;
   }
 
-  async validateLogicalAnswer(
-    resultId: number,
+  async isLogicalAnswerCorrect(
     questionId: number,
     params: AnswerLogicalQuestionInterface,
   ) {
     const logicalQuestion = await this.getLogicalQuestion(questionId);
-    const initialLogicalAnswer = await this.getLogicalAnswer(
-      questionId,
-      resultId,
-    );
 
     const checkCorrect =
       params.candidateAnswer === logicalQuestion.result ? 1 : 0;
-    const answerStatus = params.candidateAnswer
-      ? AnswerStatusEnum.DONE
-      : AnswerStatusEnum.SKIP;
-
-    const paramUpdate = plainToClass(LogicalAnswers, {
-      candidateAnswer: params.candidateAnswer,
-      isCorrect: checkCorrect,
-      status: answerStatus,
-    });
-
-    await this.logicalAnswerRepository.update(
-      initialLogicalAnswer.id,
-      paramUpdate,
-    );
 
     if (checkCorrect) {
       return {
@@ -74,6 +55,33 @@ export class LogicalAnswersService {
     return {
       checkResult: false,
     };
+  }
+
+  async saveLogicalAnswer(
+    resultId: number,
+    questionId: number,
+    params: AnswerLogicalQuestionInterface,
+    checkResult: boolean,
+  ) {
+    const initialLogicalAnswer = await this.getLogicalAnswer(
+      questionId,
+      resultId,
+    );
+
+    const answerStatus = params.candidateAnswer
+      ? AnswerStatusEnum.DONE
+      : AnswerStatusEnum.SKIP;
+
+    const paramUpdate = plainToClass(LogicalAnswers, {
+      candidateAnswer: params.candidateAnswer,
+      isCorrect: checkResult,
+      status: answerStatus,
+    });
+
+    await this.logicalAnswerRepository.update(
+      initialLogicalAnswer.id,
+      paramUpdate,
+    );
   }
 
   async getLogicalQuestion(questionId: number) {
