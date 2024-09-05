@@ -32,10 +32,26 @@ export class MemoryAnswersController extends BaseController {
       updateMemoryAnswer,
     );
 
-    if (
-      memoryAnswer.status === AnswerStatusEnum.DONE &&
-      memoryAnswer.isCorrect === 0
-    ) {
+    if (memoryAnswer.status !== AnswerStatusEnum.DONE) {
+      return this.successResponse(
+        {
+          data: {
+            check: true,
+            question: {
+              id: memoryAnswer.id,
+              level: memoryAnswer.level,
+              status: memoryAnswer.status,
+              candidateAnswer: memoryAnswer.candidateAnswer,
+              resultId: memoryAnswer.resultId,
+            },
+          },
+          message: 'Continue this level',
+        },
+        res,
+      );
+    }
+
+    if (memoryAnswer.isCorrect === 0) {
       const gameResult = await this.gameResultService.getDetailGameResult(
         resultId,
       );
@@ -51,61 +67,39 @@ export class MemoryAnswersController extends BaseController {
       );
     }
 
-    if (
-      memoryAnswer.status === AnswerStatusEnum.DONE &&
-      memoryAnswer.isCorrect === 1
-    ) {
-      await this.gameResultService.updateMemoryGameResult(resultId);
+    await this.gameResultService.updateMemoryGameResult(resultId);
 
-      if (level === 25) {
-        await this.gameResultService.updateGameResultStatus(resultId);
+    if (level === 25) {
+      await this.gameResultService.updateGameResultStatus(resultId);
 
-        const gameResult = await this.gameResultService.getDetailGameResult(
-          resultId,
-        );
+      const gameResult = await this.gameResultService.getDetailGameResult(
+        resultId,
+      );
 
-        return this.successResponse(
-          {
-            data: {
-              gameResult: gameResult,
-            },
-            message: 'End game',
+      return this.successResponse(
+        {
+          data: {
+            gameResult: gameResult,
           },
-          res,
-        );
-      } else {
-        const nextMemoryQuestion =
-          await this.memoryAnswerService.createRandomMemoryAnswer(
-            resultId,
-            level + 1,
-          );
-
-        return this.successResponse(
-          {
-            data: {
-              check: true,
-              question: nextMemoryQuestion,
-            },
-            message: 'Complete previous level',
-          },
-          res,
-        );
-      }
+          message: 'End game',
+        },
+        res,
+      );
     }
+
+    const nextMemoryQuestion =
+      await this.memoryAnswerService.createRandomMemoryAnswer(
+        resultId,
+        level + 1,
+      );
 
     return this.successResponse(
       {
         data: {
           check: true,
-          question: {
-            id: memoryAnswer.id,
-            level: memoryAnswer.level,
-            status: memoryAnswer.status,
-            candidateAnswer: memoryAnswer.candidateAnswer,
-            resultId: memoryAnswer.resultId,
-          },
+          question: nextMemoryQuestion,
         },
-        message: 'Continue this level',
+        message: 'Complete previous level',
       },
       res,
     );

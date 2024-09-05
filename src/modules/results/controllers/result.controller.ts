@@ -73,26 +73,6 @@ export class GameResultsController extends BaseController {
     }
 
     if (
-      game.category === GameCategoryEnum.LOGICAL &&
-      newGameResult?.currentQuestionLevel !== 1
-    ) {
-      const logicalQuestion = await this.gameResultService.continueLogicalGame(
-        createGameResultDto,
-      );
-
-      return this.successResponse(
-        {
-          data: {
-            continue: newGameResult,
-            question: logicalQuestion,
-          },
-          message: 'Continue logical game',
-        },
-        res,
-      );
-    }
-
-    if (
       game.category === GameCategoryEnum.MEMORY &&
       newGameResult?.currentQuestionLevel === 1
     ) {
@@ -114,13 +94,45 @@ export class GameResultsController extends BaseController {
         res,
       );
     }
+  }
+
+  @Post('/continue')
+  @UseGuards(JwtAuthGuard, new AuthorizationGuard([RoleEnum.CANDIDATE]))
+  async continuePlayLogicalGame(
+    @Body() continueGameResultDto: ContinueGameResultDto,
+    @Res() res: Response,
+  ) {
+    const [game, newGameResult] = await Promise.all([
+      this.gameService.getDetailGame(continueGameResultDto.gameId),
+      this.gameResultService.createGameResults(continueGameResultDto),
+    ]);
+
+    if (
+      game.category === GameCategoryEnum.LOGICAL &&
+      newGameResult?.currentQuestionLevel !== 1
+    ) {
+      const logicalQuestion = await this.gameResultService.continueLogicalGame(
+        continueGameResultDto,
+      );
+
+      return this.successResponse(
+        {
+          data: {
+            continue: newGameResult,
+            question: logicalQuestion,
+          },
+          message: 'Continue logical game',
+        },
+        res,
+      );
+    }
 
     if (
       game.category === GameCategoryEnum.MEMORY &&
       newGameResult?.currentQuestionLevel !== 1
     ) {
       const memoryLevel = await this.memoryAnswerService.continueMemoryGame(
-        createGameResultDto,
+        continueGameResultDto,
       );
 
       return this.successResponse(
@@ -133,65 +145,6 @@ export class GameResultsController extends BaseController {
         },
         res,
       );
-    }
-  }
-
-  @Post('/continue')
-  @UseGuards(JwtAuthGuard, new AuthorizationGuard([RoleEnum.CANDIDATE]))
-  async continuePlayLogicalGame(
-    @Body() continueGameResultDto: ContinueGameResultDto,
-    @Res() res: Response,
-  ) {
-    const game = await this.gameService.getDetailGame(
-      continueGameResultDto.gameId,
-    );
-
-    if (game.category === GameCategoryEnum.LOGICAL) {
-      const nextQuestion = await this.gameResultService.continueLogicalGame(
-        continueGameResultDto,
-      );
-
-      if (nextQuestion) {
-        return this.successResponse(
-          {
-            data: {
-              question: nextQuestion,
-            },
-            message: 'Continue playing game',
-          },
-          res,
-        );
-      } else {
-        return this.errorsResponse(
-          {
-            message: 'Can not continue this game',
-          },
-          res,
-        );
-      }
-    } else {
-      const nextLevel = await this.memoryAnswerService.continueMemoryGame(
-        continueGameResultDto,
-      );
-
-      if (nextLevel) {
-        return this.successResponse(
-          {
-            data: {
-              question: nextLevel,
-            },
-            message: 'Continue playing game',
-          },
-          res,
-        );
-      } else {
-        return this.errorsResponse(
-          {
-            message: 'Can not continue this game',
-          },
-          res,
-        );
-      }
     }
   }
 
