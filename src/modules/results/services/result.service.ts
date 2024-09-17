@@ -20,7 +20,6 @@ import { GameResultStatusEnum } from '@common/enum/game-result-status.enum';
 import { LogicalAnswersRepository } from '../repositories/logical-answer.repository';
 import { LogicalQuestionsRepository } from '@modules/logical-questions/repositories/logical-question.repository';
 import { AnswerStatusEnum } from '@common/enum/answer-status.enum';
-import { LogicalQuestionsService } from '@modules/logical-questions/service/logical-question.service';
 import { LogicalAnswersService } from './logical-answer.service';
 import { LogicalQuestions } from '@entities/logical-questions.entity';
 
@@ -33,7 +32,6 @@ export class GameResultsService {
     private gamesRepository: GamesRepository,
     private logicalAnswerRepository: LogicalAnswersRepository,
     private logicalQuestionRepository: LogicalQuestionsRepository,
-    private logicalQuestionService: LogicalQuestionsService,
     private logicalAnswerService: LogicalAnswersService,
     private readonly i18n: I18nService,
   ) {}
@@ -56,7 +54,7 @@ export class GameResultsService {
         checkAnswer === true
           ? existedGameResult.score + 1
           : existedGameResult.score,
-      updatedAt: Date.now(),
+      updatedAt: new Date(Math.floor(new Date().getTime() / 1000) * 1000),
     });
 
     const updatedLogicalGameResult = await this.gameResultRepository
@@ -98,12 +96,6 @@ export class GameResultsService {
   }
 
   async getGameResult(resultId: number) {
-    const gameResult = await this.getDetailGameResult(resultId);
-
-    return gameResult;
-  }
-
-  async getDetailGameResult(resultId: number) {
     const gameResult: GameResults = await this.gameResultRepository.findOne({
       where: {
         id: resultId,
@@ -335,7 +327,7 @@ export class GameResultsService {
   }
 
   async completeGame(resultId: number) {
-    const result = await this.getDetailGameResult(resultId);
+    const result = await this.getGameResult(resultId);
 
     const paramUpdate = plainToClass(GameResults, {
       status: GameResultStatusEnum.COMPLETED,
@@ -364,7 +356,7 @@ export class GameResultsService {
     return true;
   }
 
-  async saveLogicalAnswers(
+  async saveInitialLogicalAnswers(
     newGameResult: GameResults,
     listRandomLogicalQuestions: LogicalQuestions[],
   ) {

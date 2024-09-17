@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { LogicalAnswersController } from './logical-answer.controller';
+import { LogicalAnswersController } from '../controllers/logical-answer.controller';
 import { LogicalAnswersService } from '../services/logical-answer.service';
 import { GameResultsService } from '../services/result.service';
 import { UpdateLogicalAnswerDto } from '../dto/update-logical-answer.dto';

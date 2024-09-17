@@ -55,7 +55,7 @@ export class GameResultsController extends BaseController {
       const listRandomLogicalQuestions =
         await this.logicalQuestionService.randomLogicalQuestions();
 
-      await this.gameResultService.saveLogicalAnswers(
+      await this.gameResultService.saveInitialLogicalAnswers(
         newGameResult,
         listRandomLogicalQuestions,
       );
