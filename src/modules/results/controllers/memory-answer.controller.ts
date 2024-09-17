@@ -52,9 +52,7 @@ export class MemoryAnswersController extends BaseController {
     }
 
     if (memoryAnswer.isCorrect === 0) {
-      const gameResult = await this.gameResultService.getDetailGameResult(
-        resultId,
-      );
+      const gameResult = await this.gameResultService.getGameResult(resultId);
 
       return this.successResponse(
         {
@@ -72,9 +70,7 @@ export class MemoryAnswersController extends BaseController {
     if (level === 25) {
       await this.gameResultService.updateGameResultStatus(resultId);
 
-      const gameResult = await this.gameResultService.getDetailGameResult(
-        resultId,
-      );
+      const gameResult = await this.gameResultService.getGameResult(resultId);
 
       return this.successResponse(
         {
